@@ -6,7 +6,7 @@ import User from './models/User';
 import type { JWT } from 'next-auth/jwt';
 import type { Session } from 'next-auth';
 
-const authConfig = {
+export const authConfig = {
   providers: [
     Credentials({
       credentials: {
@@ -58,7 +58,3 @@ const authConfig = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-const handler = NextAuth(authConfig);
-export const GET = handler.GET;
-export const POST = handler.POST;
-export const auth = handler;
