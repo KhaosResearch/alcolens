@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ## 🚀 Roadmap de Desarrollo & Nuevas Funcionalidades (Rama Dev)
 
 A continuación se detallan las implementaciones técnicas planificadas para mejorar la seguridad, la experiencia del paciente y la integración clínica de la App AUDIT-C.
