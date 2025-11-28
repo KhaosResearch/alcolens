@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import {primaryFontRegular} from "./lib/utils/fonts";
+import { primaryFontRegular } from "./lib/utils/fonts";
 import "./globals.css";
 import { AuthProvider } from "@/app/lib/providers";
-import  Header from "@/app/lib/utils/header";
-import  Footer from "./lib/utils/footer";
+import Header from "@/app/lib/utils/header";
+import Footer from "./lib/utils/footer";
 import { CursorProvider, Cursor, CursorFollow } from "@/components/animate-ui/components/animate/cursor";
 
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 
 
 export default function RootLayout({
-  
+
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -24,17 +24,16 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body
-        className={`${primaryFontRegular.className} antialiased bg-slate-red-50 min-h-screen flex flex-col`}
+        className={`${primaryFontRegular.className} antialiased min-h-screen flex flex-col`}
       >
-        <div className="fixed inset-0 bg-[#CD4242] -z-10"></div>
+        <div className="fixed inset-0 bg-background -z-10"></div>
         <AuthProvider>
           <CursorProvider>
             <Cursor />
-            <CursorFollow>AlcoLens</CursorFollow>
-            <Header/>
+            <Header />
             <main>{children}</main>
             <Footer />
-            </CursorProvider>
+          </CursorProvider>
         </AuthProvider>
       </body>
     </html>
