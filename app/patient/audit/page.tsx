@@ -1,239 +1,276 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { auditQuestionsData, studyLevel } from '@/app/api/audit'; 
-import AuditQuestionCard from '@/app/lib/auditquestioncard'; 
-import { riskEvaluation, Sex, auditResult } from '@/app/lib/utils/auditLogic'; 
+import { studyLevel, auditQuestionsData } from '@/app/api/audit';
+import { Sex, calculateAuditScore, riskEvaluation, saveAuditResult } from '@/app/lib/utils/auditLogic';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { primaryFontBold, primaryFontRegular } from '@/app/lib/utils/fonts';
+import LiquidButton from '@/app/lib/utils/button-liquids';
+import { AuditStep, OptionCard } from './components/audit-step';
+import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '@/app/lib/utils';
+import { Loader2 } from 'lucide-react';
 
-// Definimos las fases posibles de la pantalla
 type Fase = 'estudios' | 'sexo' | 'test' | 'resultados';
 
+
 export default function AuditPage() {
-  // --- ESTADOS DE LA APP ---
-  const [fase, setFase] = useState<Fase>('estudios'); // 👈 AHORA EMPEZAMOS AQUÍ
-  const [isSaving, setIsSaving] = useState(false);
-  const [dataSaved, setDataSaved] = useState(false); // Para saber si ya guardamos
+
+  const searchParams = useSearchParams();
+  const [fase, setFase] = useState<Fase>('estudios');
+
+  const [saving, setIsSaving] = useState(false);
+  const [dataSaved, setDataSaved] = useState(false);
+
   const [patientId, setPatientId] = useState('');
+  const [isGuest, setIsGuest] = useState(true);
 
-  // Datos del paciente
   const [sexo, setSexo] = useState<Sex>('man');
-  // Quitamos el valor por defecto, ahora se rellena dinámicamente
-  const [nivelUsuario, setNivelUsuario] = useState<studyLevel>('secundariabach'); 
-  
-  // Datos del test
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [respuestas, setRespuestas] = useState<Record<string, number>>({});
-  const [resultadoFinal, setResultadoFinal] = useState<auditResult | null>(null);
+  const [estudios, setEstudios] = useState<studyLevel>('sinoprimaria');
 
-  // Generar ID anónimo al cargar
+  const [test, setTest] = useState(0);
+  const [resultados, setResultados] = useState<Record<string, number>>({});
+
   useEffect(() => {
-    const idAleatorio = Math.random().toString(36).substring(2, 15);
-    setPatientId(idAleatorio);
-  }, []);
-
-  // --- LÓGICA DE NAVEGACIÓN ---
-
-  // PASO 1: Seleccionar Estudios
-  const seleccionarEstudios = (nivel: studyLevel) => {
-    setNivelUsuario(nivel);
-    setFase('sexo'); // Pasamos al siguiente paso
-  };
-
-  // PASO 2: Seleccionar Sexo
-  const seleccionarSexo = (sexoSeleccionado: Sex) => {
-    setSexo(sexoSeleccionado);
-    setFase('test'); // Pasamos al siguiente paso
-  };
-
-  // PASO 3: Responder Preguntas
-  const handleAnswer = (valor: number) => {
-    const preguntaActual = auditQuestionsData[currentIndex];
-    const nuevasRespuestas = { ...respuestas, [preguntaActual.id]: valor };
-    setRespuestas(nuevasRespuestas);
-
-    if (currentIndex < auditQuestionsData.length - 1) {
-      setCurrentIndex(currentIndex + 1);
+    const idInvitation = searchParams.get('id');
+    if (idInvitation) {
+      setPatientId(idInvitation);
+      setIsGuest(false);
     } else {
-      terminarTest(nuevasRespuestas);
+      setPatientId(Math.random().toString(36).substring(2, 9));
+      setIsGuest(true);
     }
-  };
+  }, [searchParams]);
 
-  // CÁLCULO DE RESULTADOS (PERO NO GUARDADO)
-  const terminarTest = (finalRespuestas: Record<string, number>) => {
-    const suma = Object.values(finalRespuestas).reduce((a, b) => a + b, 0);
-    const resultado = riskEvaluation(suma, sexo);
-    setResultadoFinal(resultado);
-    setFase('resultados'); // Mostramos resultados y PEDIMOS CONSENTIMIENTO
-  };
-
-  // PASO 4: Lógica de Consentimiento y Guardado
-// PASO 4: Lógica de Consentimiento y Guardado
-  const manejarConsentimiento = async (acepta: boolean) => {
-    if (!acepta) {
-      alert("Entendido. No guardaremos sus datos. Gracias por hacer el test.");
-      return;
-    }
-
+  const handleFinish = async () => {
     setIsSaving(true);
+    const score = calculateAuditScore(resultados);
+    const risk = riskEvaluation(score, sexo).riskLevel;
 
-    // 1. DICCIONARIO DE TRADUCCIÓN (Seguridad Total)
-    // Mapeamos lo que devuelve tu lógica (keys) a lo que espera la BD (values)
-    const riskMap: Record<string, string> = {
-      'verde': 'green',
-      'amarillo': 'yellow',
-      'ambar': 'amber',
-      'rojo': 'red',
-      // Por si acaso tu lógica ya devuelve inglés, lo dejamos pasar
-      'green': 'green',
-      'yellow': 'yellow',
-      'amber': 'amber',
-      'red': 'red'
-    };
+    await saveAuditResult(patientId, score, risk, resultados, sexo, estudios);
 
-    try {
-      const response = await fetch('/api/responses', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          patientId: patientId,
-          // Como en tu UI ya usas 'man'/'woman', lo enviamos directo
-          sex: sexo, 
-          studyLevel: nivelUsuario,
-          answers: respuestas,
-          totalScore: Object.values(respuestas).reduce((a, b) => a + b, 0),
-          
-          // ✅ AQUI USAMOS EL MAPA
-          // Si por error riskLevel es undefined, ponemos 'green' por defecto para no romper la app
-          levelResult: resultadoFinal ? (riskMap[resultadoFinal.riskLevel] || 'green') : 'green'
-        })
-      });
+    setIsSaving(false);
+    setDataSaved(true);
+    setFase('resultados');
+  };
 
-      if (response.ok) {
-        setDataSaved(true);
-        console.log("✅ Datos guardados con éxito.");
-      } else {
-        const error = await response.json();
-        console.error("❌ Error API:", error);
-        alert("Hubo un problema guardando los datos.");
-      }
-    } catch (error) {
-      console.error("❌ Error Red:", error);
-    } finally {
-      setIsSaving(false);
+  // Función para renderizar el contenido según la fase actual
+  // Esto es el "Cerebro" de nuestra UI: decide qué mostrar basándose en el estado.
+  const renderStep = () => {
+    switch (fase) {
+      case 'estudios':
+        return (
+          <AuditStep
+            title="Nivel de Estudios"
+            description="Para adaptar la información a usted, seleccione su nivel de estudios más alto."
+            onNext={() => setFase('sexo')}
+            canNext={!!estudios}
+          >
+            <div className="grid gap-3">
+              <OptionCard
+                label="Sin estudios / Primaria"
+                selected={estudios === 'sinoprimaria'}
+                onClick={() => setEstudios('sinoprimaria')}
+              />
+              <OptionCard
+                label="Secundaria / Bachillerato"
+                selected={estudios === 'secundariabach'}
+                onClick={() => setEstudios('secundariabach')}
+              />
+              <OptionCard
+                label="Universitarios / Postgrado"
+                selected={estudios === 'universitariosup'}
+                onClick={() => setEstudios('universitariosup')}
+              />
+            </div>
+          </AuditStep>
+        );
+      case 'sexo':
+        return (
+          <AuditStep
+            title="Sexo Biológico"
+            description="El metabolismo del alcohol varía según el sexo biológico."
+            onNext={() => setFase('test')}
+            canNext={!!sexo}
+          >
+            <div className="grid gap-3">
+              <OptionCard
+                label="Hombre"
+                selected={sexo === 'man'}
+                onClick={() => setSexo('man')}
+              />
+              <OptionCard
+                label="Mujer"
+                selected={sexo === 'woman'}
+                onClick={() => setSexo('woman')}
+              />
+            </div>
+          </AuditStep>
+        );
+      case 'test':
+        const currentQuestion = auditQuestionsData[test];
+        const progress = ((test + 1) / auditQuestionsData.length) * 100;
+
+        return (
+          <AuditStep
+            title={`Pregunta ${test + 1} de ${auditQuestionsData.length}`}
+            description={currentQuestion.question[estudios]}
+          // No "Next" button here, we advance on selection
+          >
+            <div className="grid gap-3">
+              {currentQuestion.answerOptions.map((option) => (
+                <OptionCard
+                  key={option.valor}
+                  label={option.texto[estudios]}
+                  selected={resultados[currentQuestion.id] === option.valor}
+                  onClick={() => {
+                    // Guardamos la respuesta
+                    const newResultados = { ...resultados, [currentQuestion.id]: option.valor };
+                    setResultados(newResultados);
+
+                    // Avanzamos o terminamos
+                    if (test < auditQuestionsData.length - 1) {
+                      setTimeout(() => setTest(test + 1), 250); // Pequeño delay para feedback visual
+                    } else {
+                      // Trigger save logic
+                      setTimeout(handleFinish, 250);
+                    }
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Barra de progreso simple */}
+            <div className="mt-8 h-1 w-full bg-muted rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-primary"
+                initial={{ width: 0 }}
+                animate={{ width: `${progress}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </AuditStep>
+        );
+      case 'resultados':
+        const score = calculateAuditScore(resultados);
+        const result = riskEvaluation(score, sexo);
+
+        return (
+          <AuditStep
+            title="Resultados del Test"
+            description="Basado en sus respuestas, este es su nivel de riesgo estimado."
+          >
+            <div className="space-y-8 animate-in zoom-in-95 duration-500">
+
+              {/* Score Circle */}
+              <div className="flex justify-center">
+                <div className={cn(
+                  "w-32 h-32 rounded-full flex flex-col items-center justify-center border-4 shadow-xl transition-colors duration-500",
+                  result.color === 'green' ? "border-green-500 bg-green-50 text-green-700" :
+                    result.color === 'yellow' ? "border-yellow-500 bg-yellow-50 text-yellow-700" :
+                      result.color === 'amber' ? "border-orange-500 bg-orange-50 text-orange-700" :
+                        "border-red-500 bg-red-50 text-red-700"
+                )}>
+                  <span className="text-4xl font-bold">{score}</span>
+                  <span className="text-xs font-medium uppercase tracking-wider">Puntos</span>
+                </div>
+              </div>
+
+              {/* Risk Text */}
+              <div className="text-center space-y-2">
+                <h3 className={cn("text-2xl font-bold",
+                  result.color === 'green' ? "text-green-600" :
+                    result.color === 'yellow' ? "text-yellow-600" :
+                      result.color === 'amber' ? "text-orange-600" :
+                        "text-red-600"
+                )}>
+                  {result.title}
+                </h3>
+                <p className="text-muted-foreground text-lg">
+                  {result.message}
+                </p>
+              </div>
+
+              <div className="flex justify-center pt-4">
+                <LiquidButton
+                  href="/"
+                  className="w-fit"
+                >Volver al inicio
+                </LiquidButton>
+              </div>
+            </div>
+          </AuditStep>
+        );
+      default:
+        return null;
     }
   };
 
-  // --- RENDERIZADO (VISTAS) ---
-
-  // VISTA 1: ¿Qué estudios tiene?
-  if (fase === 'estudios') {
+  if (saving) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-        <h1 className="text-2xl font-bold mb-2 text-gray-800">Bienvenido</h1>
-        <p className="mb-8 text-gray-600 text-center max-w-md">
-          Para adaptar las preguntas a su perfil, por favor seleccione su nivel de estudios:
-        </p>
-        <div className="space-y-3 w-full max-w-md">
-          <button onClick={() => seleccionarEstudios('sinoprimaria')} className="btn-option">
-            🎓 Primaria / Sin estudios
-          </button>
-          <button onClick={() => seleccionarEstudios('secundariabach')} className="btn-option">
-            📚 Secundaria / Bachillerato
-          </button>
-          <button onClick={() => seleccionarEstudios('universitariosup')} className="btn-option">
-            🏛️ Universidad / Superior
-          </button>
+      <div className={`${primaryFontRegular.className} min-h-screen flex flex-col items-center justify-center bg-background`}>
+        <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <p className="text-lg text-muted-foreground font-medium">Guardando resultados...</p>
         </div>
       </div>
     );
   }
 
-  // VISTA 2: ¿Sexo biológico?
-  if (fase === 'sexo') {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-        <h1 className="text-2xl font-bold mb-6 text-gray-800">Datos Fisiológicos</h1>
-        <p className="mb-6 text-gray-600">Seleccione su sexo biológico (necesario para el cálculo médico):</p>
-        <div className="space-y-4 w-full max-w-md">
-          <button onClick={() => seleccionarSexo('man')} className="btn-option border-blue-200 hover:bg-blue-50">
-            👨 Hombre
-          </button>
-          <button onClick={() => seleccionarSexo('woman')} className="btn-option border-pink-200 hover:bg-pink-50">
-            👩 Mujer
-          </button>
-        </div>
+  return (
+    // 1. Container Principal (The Wrapper)
+    // min-h-screen: Ocupa al menos toda la altura de la pantalla.
+    // flex flex-col: Organiza los hijos en columna (útil para footer sticky si lo hubiera).
+    // bg-background: Usa el color de fondo definido en globals.css (oklch).
+    <div className={`${primaryFontRegular.className} min-h-screen flex flex-col bg-background relative overflow-hidden`}>
+
+      {/* 2. Elementos Decorativos de Fondo (Background Blobs) */}
+      {/* Estos divs absolutos crean el efecto de "luz" o "mancha" en el fondo */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary/5 rounded-full blur-[120px]" />
       </div>
-    );
-  }
 
-  // VISTA 3: El Test (Igual que antes)
-  if (fase === 'test') {
-    return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center p-4">
-        <div className="w-full max-w-2xl mb-8">
-          <div className="flex justify-between text-xs text-gray-500 mb-2 font-semibold tracking-wide uppercase">
-            <span>Progreso</span>
-            <span>{currentIndex + 1} / {auditQuestionsData.length}</span>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out" 
-              style={{ width: `${((currentIndex + 1) / auditQuestionsData.length) * 100}%` }}
-            ></div>
-          </div>
-        </div>
-        <AuditQuestionCard 
-          question={auditQuestionsData[currentIndex]}
-          studyLevel={nivelUsuario}
-          onAnswer={handleAnswer}
-        />
-      </div>
-    );
-  }
+      {/* 3. Contenido Principal (The Stage) */}
+      {/* z-10: Asegura que el contenido esté por encima del fondo decorativo. */}
+      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 z-10">
 
-  // VISTA 4: Resultados y Consentimiento
-  if (fase === 'resultados' && resultadoFinal) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4">
-        <div className={`w-full max-w-lg p-8 rounded-2xl shadow-xl border-2 ${resultadoFinal.color} mb-6`}>
-          <h2 className="text-3xl font-bold mb-4">{resultadoFinal.title}</h2>
-          <p className="text-lg font-medium mb-6 opacity-90">{resultadoFinal.message}</p>
-          <div className="bg-white/60 p-4 rounded-lg text-sm font-medium">
-            ℹ️ Recuerde: El único consumo sin riesgo es 0.
-          </div>
-        </div>
+        {/* 4. La Tarjeta (The Card) */}
+        {/* max-w-2xl: Limita el ancho para que no se estire demasiado en pantallas grandes. */}
+        {/* w-full: Ocupa todo el ancho disponible hasta el máximo. */}
+        <div className="w-full max-w-2xl">
 
-        {/* --- SECCIÓN DE CONSENTIMIENTO --- */}
-        {!dataSaved ? (
-          <div className="w-full max-w-lg bg-white p-6 rounded-xl shadow-md border border-gray-200">
-            <h3 className="font-bold text-gray-800 mb-2">🤝 Colabore con la ciencia</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              ¿Nos permite guardar sus respuestas de forma <strong>totalmente anónima</strong> para estudios estadísticos sobre salud hepática? No guardaremos su nombre ni teléfono.
+          {/* Header de la sección */}
+          <div className="text-center mb-8 space-y-2">
+            <h1 className={`${primaryFontBold.className} text-3xl sm:text-4xl text-primary`}>
+              Evaluación AUDIT-C
+            </h1>
+            <p className="text-muted-foreground text-lg">
+              Cuestionario clínico validado para la detección de consumo de alcohol.
             </p>
-            <div className="flex gap-3">
-              <button 
-                onClick={() => manejarConsentimiento(false)}
-                className="flex-1 py-3 border border-gray-300 rounded-lg text-gray-600 hover:bg-gray-50 font-medium"
-              >
-                No, gracias
-              </button>
-              <button 
-                onClick={() => manejarConsentimiento(true)}
-                disabled={isSaving}
-                className="flex-1 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-bold shadow-lg disabled:opacity-50"
-              >
-                {isSaving ? 'Guardando...' : 'Sí, contribuir'}
-              </button>
+          </div>
+
+          {/* Área del Formulario */}
+          <div className="bg-card border border-border rounded-3xl shadow-xl shadow-primary/5 p-6 sm:p-10 backdrop-blur-sm transition-all duration-500 overflow-hidden">
+            {/* Aquí llamamos a nuestra función "cerebro" */}
+            <div className="min-h-[300px] flex flex-col items-center justify-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={fase}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="w-full"
+                >
+                  {renderStep()}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
-        ) : (
-          <div className="text-green-600 font-medium bg-green-50 px-6 py-3 rounded-full border border-green-200">
-            ✅ ¡Gracias! Sus datos anónimos han sido registrados.
-          </div>
-        )}
-      </div>
-    );
-  }
 
-  return null;
+        </div>
+      </main>
+    </div>
+  );
 }
