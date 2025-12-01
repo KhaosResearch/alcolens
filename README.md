@@ -1,126 +1,131 @@
-## 🚀 Roadmap de Desarrollo & Nuevas Funcionalidades (Rama Dev)
+🏥 AlcoLens Pro - Plataforma de Evaluación de Salud Hepática
 
-A continuación se detallan las implementaciones técnicas planificadas para mejorar la seguridad, la experiencia del paciente y la integración clínica de la App AUDIT-C.
+Sistema inteligente de cribado y monitorización de riesgo hepático mediante el test AUDIT-C. > Una solución "Mobile First" diseñada para conectar médicos y pacientes de forma segura, rápida y anónima.
 
-### 1. 🔐 Seguridad y Control de Acceso
-El objetivo es blindar el sistema contra spam y asegurar que solo pacientes citados y médicos autorizados accedan.
+📋 Descripción del Proyecto
 
-- [ ] **Autenticación de Personal (SSO):**
-  - Implementación de *Single Sign-On* para evitar la creación de nuevas credenciales.
-  - El médico se loguea con credenciales corporativas del hospital.
-  - *Restricción:* Solo usuarios autenticados pueden activar el envío de SMS.
-- [ ] **Acceso Híbrido (QR en Sala de Espera):**
-  - Despliegue de QR genérico en cartelería ("Evalúe su salud hepática").
-  - **Lógica de Validación:** `QR Scan` -> `Input (NHC/DNI + Fecha Nac.)` -> `Validación API (Cita activa hoy)` -> `Acceso Test`.
-  - *Beneficio:* Optimización de tiempos (paciente entra con test realizado).
-- [ ] **Seguridad de Enlaces (OTP):**
-  - Los enlaces vía SMS deben contener un *One-Time Token*.
-  - Configurar caducidad (ej. 24h o tras finalizar el test) para bloquear accesos futuros al historial.
+AlcoLens Pro es una aplicación web progresiva (PWA) desarrollada para facilitar la detección temprana de problemas relacionados con el consumo de alcohol. La plataforma permite a los profesionales sanitarios invitar a pacientes a realizar autoevaluaciones digitales, obteniendo resultados en tiempo real y estratificando el riesgo automáticamente.
 
-### 2. 🧠 Adaptabilidad del Contenido (UX Dinámica)
-Uso de la variable "Nivel de Estudios" para mejorar la alfabetización en salud y la comprensión del feedback.
+Objetivos Clave
 
-- [ ] **Motor de Lenguaje Adaptativo:**
-  - **Nivel Bajo/Primarios:** Priorizar iconografía, vídeos cortos y lenguaje claro (evitar porcentajes complejos).
-  - **Nivel Universitario:** Mostrar información técnica basada en evidencia (fisiopatología del daño hepático por alcohol).
-- [ ] **Accesibilidad (A11y):**
-  - Integración de API *Text-to-Speech* (botón "Leer preguntas") para pacientes con dificultades visuales o de lectura.
+Digitalización del Cribado: Sustituir el papel por un flujo digital seguro.
 
-### 3. 💡 Mejoras en la Intervención Breve (Feedback)
-Estrategias de gamificación y psicología conductual para motivar el "Consumo Cero".
+Accesibilidad Universal: Interfaz adaptativa que ajusta el lenguaje según el nivel educativo del paciente.
 
-- [ ] **Visualización de Impacto ("Body Map"):**
-  - Renderizado de silueta humana interactiva.
-  - En resultados de riesgo (Rojo/Ámbar), resaltar órganos afectados (Hígado, Cerebro, Corazón) para tangibilizar el daño.
-- [ ] **Calculadora de Ahorro Económico:**
-  - Nuevo input condicional: "¿Gasto semanal aproximado?".
-  - *Output:* Proyección de ahorro anual si se reduce el consumo a 0.
-- [ ] **Contrato de Salud Digital:**
-  - Pantalla de cierre con compromiso simbólico ("Me comprometo a cuidar mi hígado...").
-  - Captura de firma digital o checkbox de compromiso solemne.
+Privacidad por Diseño: Recogida de datos anonimizada con identificadores hash.
 
-### 4. 🏥 Integración y Flujo Clínico (Backend)
-Evitar que la app sea un silo de información desconectado.
+Eficiencia Clínica: Dashboard para médicos con KPIs epidemiológicos en tiempo real.
 
-- [ ] **Interoperabilidad (HL7 / FHIR):**
-  - Desarrollo de conectores para inyección automática de resultados en la HCE (Historia Clínica Electrónica).
-  - Destino: Notas evolutivas o sección de antecedentes.
-- [ ] **Dashboard del Facultativo:**
-  - Vista de "Pacientes del Día".
-  - Indicadores de estado en tiempo real (Semáforo de riesgo) junto al paciente que ya completó el test vía SMS o QR.
+🚀 Funcionalidades Principales
 
-### 5. 🛡️ Privacidad y Gestión de Datos (GDPR/LOPD)
-- [ ] **Anonimización para Investigación:**
-  - Lógica de separación de datos (Data Dissociation).
-  - Si `Consentimiento == True`: Generar Hash anónimo vinculando Score/Edad/Sexo y separándolo de PII (Teléfono/NHC) para exportación científica segura.
+👨‍⚕️ Para el Profesional Sanitario (Zona Privada)
 
----
-=======
-# 🔐 Feature Branch: Authentication & Access Control (`feature/login`)
+Panel de Control (Dashboard): Visualización de estadísticas en tiempo real (Pacientes evaluados, alertas de alto riesgo, distribución epidemiológica).
 
-Esta rama implementa la capa de seguridad y autenticación de la aplicación AUDIT-C. Gestiona el control de acceso tanto para el personal sanitario (Web Dashboard) como para los pacientes (Acceso a Encuesta).
+Gestión de Invitaciones: Generación de enlaces únicos y seguros (tokens) para enviar por SMS o WhatsApp sin coste (Deep Linking).
 
-## 🎯 Objetivos de la Rama
-1. **Proteger el Dashboard Médico:** Implementar autenticación robusta para facultativos.
-2. **Validación de Pacientes:** Asegurar que solo los pacientes con cita o enlace válido accedan al test.
-3. **Gestión de Sesiones:** Manejo seguro de JWT (JSON Web Tokens) y expiración de sesiones.
+Seguridad: Autenticación robusta con roles y protección de rutas mediante Middleware.
 
----
+Visualización de Datos: Tablas filtrables por nivel de riesgo y gráficos de distribución.
 
-## 🛠️ Especificaciones Técnicas
+👤 Para el Paciente (Zona Pública)
 
-### 1. Autenticación de Personal Sanitario (Médicos)
-Se ha implementado un sistema preparado para **SSO (Single Sign-On)**, simulando la conexión con el directorio activo del hospital.
+Acceso Simplificado: Entrada vía enlace directo (Invitación) o Código QR (Sala de espera).
 
-* **Protocolo:** OAuth2 / OIDC (Simulado para Dev).
-* **Flujo:**
-    1. Usuario accede a `/admin/login`.
-    2. Introduce credenciales corporativas.
-    3. Backend valida contra servicio de identidad.
-    4. Se genera **JWT (Access Token)** con rol `ROLE_DOCTOR`.
-    5. Redirección al Dashboard.
+UX Adaptativa: El test cambia la redacción de las preguntas según el nivel de estudios seleccionado (Primaria / Secundaria / Universidad) para asegurar la comprensión.
 
-### 2. Autenticación de Pacientes (Dual)
-Los pacientes no tienen "cuentas", tienen **sesiones temporales** basadas en dos métodos de entrada:
+Feedback Inmediato: Sistema de semáforo (Verde/Ámbar/Rojo) con recomendaciones personalizadas al finalizar.
 
-#### A. Vía SMS (Token de un solo uso)
-* **Endpoint:** `/auth/validate-token?t={uuid}`
-* **Lógica:** El enlace contiene un UUID único vinculado a un `patient_id` y una fecha de caducidad (24h).
-* **Seguridad:** Una vez completado el test, el token se marca como `consumed` en la BBDD y no puede reutilizarse.
+Consentimiento Granular: Control explícito sobre el almacenamiento de datos para investigación.
 
-#### B. Vía QR (Sala de Espera)
-* **Endpoint:** `/auth/verify-appointment`
-* **Input:** NHC (Historia Clínica) + Fecha Nacimiento.
-* **Lógica:**
-    1. Se verifica si existe una cita activa para HOY (`appointment_date == today`).
-    2. Si es válido, se genera una sesión temporal (`ROLE_PATIENT`) que expira en 30 min.
+🛠️ Stack Tecnológico
 
----
+El proyecto utiliza una arquitectura moderna basada en Next.js App Router:
 
-## 🛡️ Seguridad Implementada
+Core: Next.js 14+ (React Server Components).
 
-* **Middleware de Protección:**
-    * `verifyAdmin`: Requerido para rutas `/api/dashboard/*`.
-    * `verifyPatient`: Requerido para rutas `/api/audit/*`.
-* **Manejo de JWT:**
-    * Los tokens se almacenan en Cookies `HttpOnly` para prevenir ataques XSS.
-    * Tiempo de vida del token médico: 8 horas (turno laboral).
-* **Rate Limiting:** Se ha añadido limitación de intentos en el login y validación de NHC para evitar fuerza bruta.
+Estilos: Tailwind CSS v4 (Motor Oxide, Variables CSS nativas oklch).
 
----
+Base de Datos: MongoDB + Mongoose (Esquemas tipados).
 
-## ⚙️ Configuración de Entorno (.env)
+Autenticación: NextAuth.js (Credenciales, JWT, Middleware edge-compatible).
 
-Para probar esta rama, asegúrate de tener las siguientes variables en tu `.env` local:
+UI/UX:
 
-```bash
-# Autenticación
-JWT_SECRET=tu_secreto_super_seguro_dev
-JWT_EXPIRATION_MD=28800 # 8 horas en segundos
-JWT_EXPIRATION_PT=1800  # 30 min en segundos
+Iconos: lucide-react.
 
-# Simulación SSO (Mock)
-MOCK_SSO_ENABLED=true
-TEST_DOCTOR_USER=admin
-TEST_DOCTOR_PASS=hospital123
->>>>>>> feature/login
+Animaciones: framer-motion (Micro-interacciones líquidas).
+
+Componentes: Radix UI / Shadcn (Dialogs accesibles).
+
+Fuentes: next/font (Google Fonts: Montserrat + Fuentes Locales).
+
+📂 Estructura del Proyecto
+
+La arquitectura sigue el patrón de separación de responsabilidades de Next.js App Router:
+
+src/
+├── app/
+│   ├── api/                 # Endpoints Backend (Next.js API Routes)
+│   │   ├── auth/            # Endpoints de NextAuth
+│   │   ├── doctor/          # API privada para el dashboard
+│   │   └── responses/       # Recepción de tests de pacientes
+│   ├── auth/                # Páginas Públicas de Autenticación
+│   │   ├── login/           # Login estilo "Enterprise"
+│   │   └── register/        # Registro de facultativos
+│   ├── doctor/              # ZONA PROTEGIDA (Middleware)
+│   │   └── dashboard/       # Panel de control médico
+│   ├── patient/             # ZONA PÚBLICA (Test)
+│   │   ├── audit/           # El cuestionario interactivo
+│   │   └── page.tsx         # Landing page del paciente
+│   ├── fonts.ts             # Configuración de tipografías
+│   └── layout.tsx           # Layout global (Header, Footer, Contextos)
+├── components/              # Componentes Reutilizables (Atomos/Moleculas)
+│   ├── Header.tsx           # Barra de navegación inteligente
+│   ├── MouseFollower.tsx    # Efecto visual de cursor
+│   └── ui/                  # Componentes base (LiquidButton, Dialog, etc.)
+├── lib/                     # Utilidades y Lógica de Negocio
+│   ├── db.ts                # Conexión a MongoDB (Singleton)
+│   ├── models/              # Modelos Mongoose (User, Response, Invitation)
+│   └── utils/               # Helpers (Cálculo de AUDIT-C, etc.)
+└── middleware.ts            # Guardián de rutas (Seguridad Edge)
+
+
+🚦 Instalación y Despliegue
+
+Requisitos Previos
+
+Node.js 18+
+
+MongoDB (Local o Atlas)
+
+Pasos
+
+Clonar el repositorio:
+
+git clone [https://github.com/tu-usuario/alcolens-pro.git](https://github.com/tu-usuario/alcolens-pro.git)
+cd alcolens-pro
+
+
+Instalar dependencias:
+
+npm install
+
+
+Configurar Variables de Entorno:
+Crea un archivo .env en la raíz con lo siguiente:
+
+# Base de Datos
+MONGODB_URI="mongodb+srv://..."
+
+# Seguridad (Generar con: openssl rand -base64 32)
+NEXTAUTH_SECRET="tu_secreto_super_seguro"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Configuración App
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+
+Ejecutar en Desarrollo:
+
+npm run dev
