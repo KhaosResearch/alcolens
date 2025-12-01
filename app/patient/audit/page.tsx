@@ -2,7 +2,7 @@
 
 import { studyLevel, auditQuestionsData } from '@/app/api/audit';
 import { Sex, calculateAuditScore, riskEvaluation, saveAuditResult } from '@/app/lib/utils/auditLogic';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { primaryFontBold, primaryFontRegular } from '@/app/lib/utils/fonts';
 import LiquidButton from '@/app/lib/utils/button-liquids';
@@ -13,8 +13,18 @@ import { Loader2 } from 'lucide-react';
 
 type Fase = 'estudios' | 'sexo' | 'test' | 'resultados';
 
+function AuditLoading() {
+  return (
+    <div className={`${primaryFontRegular.className} min-h-screen flex flex-col items-center justify-center bg-background`}>
+      <div className="flex flex-col items-center gap-4 animate-in fade-in zoom-in duration-300">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-lg text-muted-foreground font-medium">Cargando...</p>
+      </div>
+    </div>
+  );
+}
 
-export default function AuditPage() {
+function AuditContent() {
 
   const searchParams = useSearchParams();
   const [fase, setFase] = useState<Fase>('estudios');
@@ -272,5 +282,13 @@ export default function AuditPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AuditPage() {
+  return (
+    <Suspense fallback={<AuditLoading />}>
+      <AuditContent />
+    </Suspense>
   );
 }
