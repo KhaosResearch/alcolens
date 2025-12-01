@@ -105,7 +105,6 @@ src/
 - Clonar el repositorio:
 
 ```
-
 git clone [https://github.com/tu-usuario/alcolens-pro.git](https://github.com/tu-usuario/alcolens-pro.git)
 cd alcolens-pro
 ```
