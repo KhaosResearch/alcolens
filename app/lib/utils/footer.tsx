@@ -12,29 +12,29 @@ export default function Footer() {
 
           {/* Copyright y Marca */}
           <div className="text-center md:text-left">
-            <p className="text-xs text-white/60 mt-1">
+            <p className="text-xs text-foreground/60 mt-1">
               Registro seguro encriptado SSL
             </p>
-            <p className="text-xs text-white/60 mt-1">
+            <p className="text-xs text-foreground/60 mt-1">
               &copy; {new Date().getFullYear()} Servicio de Medicina Interna. Todos los derechos reservados.
             </p>
           </div>
 
           <div className="text-center md:text-center">
-            <p className="text-sm text-white">
+            <p className="text-sm text-foreground">
               AlcoLens v2.0<span className="opacity-70 font-normal"></span>
             </p>
           </div>
 
           {/* Enlaces Legales (Estilo sutil) */}
-          <div className="flex flex-wrap justify-center gap-6 text-xs font-medium text-white/70">
-            <Link href="#" className="hover:text-white transition-colors hover:underline">
+          <div className="flex flex-wrap justify-center gap-6 text-xs font-medium text-foreground/70">
+            <Link href="#" className="hover:text-foreground transition-colors hover:underline">
               Política de Privacidad
             </Link>
-            <Link href="#" className="hover:text-white transition-colors hover:underline">
+            <Link href="#" className="hover:text-foreground transition-colors hover:underline">
               Términos de Uso
             </Link>
-            <Link href="#" className="hover:text-white transition-colors hover:underline">
+            <Link href="#" className="hover:text-foreground transition-colors hover:underline">
               Soporte Técnico
             </Link>
           </div>
@@ -42,8 +42,8 @@ export default function Footer() {
         </div>
 
         {/* Pequeño disclaimer médico */}
-        <div className="mt-8 pt-4 border-t border-white/10 text-center">
-          <p className="text-[10px] text-white/40 uppercase tracking-widest">
+        <div className="mt-8 pt-4 border-t border-foreground/10 text-center">
+          <p className="text-[10px] text-foreground/40 uppercase tracking-widest">
             Uso exclusivo para personal sanitario autorizado
           </p>
         </div>

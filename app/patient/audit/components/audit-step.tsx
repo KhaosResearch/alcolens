@@ -81,7 +81,7 @@ export function AuditStep({ title, description, children, onNext, nextLabel = "S
                         onClick={onNext}
                         disabled={!canNext}
                         className={cn(
-                            "px-8 py-3 rounded-full font-bold text-white shadow-lg shadow-primary/20 transition-all",
+                            "px-8 py-3 rounded-full font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all",
                             canNext
                                 ? "bg-primary hover:shadow-primary/40"
                                 : "bg-muted text-muted-foreground cursor-not-allowed"

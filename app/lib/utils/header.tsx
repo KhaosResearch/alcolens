@@ -7,7 +7,7 @@ import { Menu, X, LogOut, User } from "lucide-react";
 import LogoIcon from "@/app/lib/utils/icono";
 import LogoText from "@/app/lib/utils/logoText";
 import { primaryFontBold } from "./fonts";
-import { RadixSwitch } from "./switch";
+import { ThemeToggle } from "@/app/components/theme-toggle";
 
 export const textShadow = "[text-shadow:_0_1px_3px_rgb(0_0_0_/_40%)]";
 
@@ -17,7 +17,7 @@ export default function Header() {
 
 
   const linkStyle = "text-sm font-bold text-secondary hover:text-secondary/80 transition-colors uppercase tracking-wide";
-  const mobileLinkStyle = "block text-lg font-bold text-slate-700 py-3 border-b border-slate-100 hover:text-background hover:bg-slate-50 px-2 rounded-lg transition-all";
+  const mobileLinkStyle = "block text-lg font-bold text-foreground py-3 border-b border-secondary/20 hover:text-background hover:bg-foreground px-2 rounded-lg transition-all";
 
   return (
     <header className={`${primaryFontBold.className} bg-primary backdrop-blur-md border-b border-secondary/10 sticky top-0 z-50 font-sans shadow-lg shadow-red-900/10`}>
@@ -40,6 +40,9 @@ export default function Header() {
           <Link href="/" className={linkStyle}>Inicio</Link>
           <Link href="/about" className={linkStyle}>Sobre Nosotros</Link>
           <Link href="/contact" className={linkStyle}>Contacto</Link>
+          {(session?.user as any)?.role === 'doctor' && (
+            <Link href="/doctor" className={linkStyle}>Panel Médico</Link>
+          )}
         </nav>
 
         <div className="flex md:flex items-center gap-2 flex-shrink-0 z-20">
@@ -82,69 +85,89 @@ export default function Header() {
           ) : (
             <Link
               href="/auth/login"
-              className="hidden sm:block text-sm font-bold text-secondary bg-secondary/20 px-4 py-2 rounded-full hover:bg-secondary hover:text-background transition-all"
+              className={`hidden sm:flex group items-center justify-center gap-2.5
+                px-5 py-2.5
+                rounded-full
+                bg-secondary/10 
+                border border-secondary/25
+                text-secondary font-bold text-sm tracking-wide
+                transition-all duration-300 ease-out
+                hover:bg-primary/10 hover:text-background hover:shadow-lg hover:shadow-black/10 hover:-translate-y-0.5
+                active:scale-95
+                ${textShadow}
+                `}
             >
               Acceso Profesional
             </Link>
           )}
 
+          <ThemeToggle />
+
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="md:hidden p-2 text-secondary hover:bg-secondary/20 rounded-xl transition-colors"
+            className="md:hidden p-2 text-background hover:bg-secondary/20 rounded-xl transition-colors"
             aria-label="Menú"
           >
             {showMenu ? <X className="w-7 h-7" /> : <Menu className="w-7 h-7" />}
           </button>
         </div>
-
       </div>
 
-      {showMenu && (
-        <div className="md:hidden absolute top-16 left-0 w-full bg-secondary shadow-2xl animate-in slide-in-from-top-5 duration-200 z-40 rounded-b-3xl border-t border-slate-100 overflow-hidden">
-          <div className="p-5 space-y-4">
-            {session && (
-              <div className="p-4 bg-background rounded-2xl flex items-center gap-4 border border-slate-100">
-                <div className="bg-background p-2.5 rounded-full text-secondary shadow-md shadow-red-200">
-                  <User className="w-6 h-6" />
+      {
+        showMenu && (
+          <div className="md:hidden absolute top-16 left-0 w-full bg-background shadow-2xl animate-in slide-in-from-top-5 duration-200 z-40 rounded-b-3xl border-t border-slate-100 overflow-hidden">
+            <div className="p-5 space-y-4">
+              {session && (
+                <div className="p-4 bg-background rounded-2xl flex items-center gap-4 border border-foreground/20">
+                  <div className="bg-background p-2.5 rounded-full text-foreground shadow-md shadow-red-200">
+                    <User className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-base font-bold text-foreground">{session.user?.name}</p>
+                    <p className="text-xs text-foreground font-bold uppercase tracking-wider">
+                      {(session.user as any)?.role || 'Usuario'}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-base font-bold text-background">{session.user?.name}</p>
-                  <p className="text-xs text-background font-bold uppercase tracking-wider">
-                    {(session.user as any)?.role || 'Usuario'}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <nav className="flex flex-col gap-1">
-              <Link href="/" onClick={() => setShowMenu(false)} className={mobileLinkStyle}>
-                Inicio
-              </Link>
-              <Link href="/about" onClick={() => setShowMenu(false)} className={mobileLinkStyle}>
-                Sobre Nosotros
-              </Link>
-              <Link href="/contact" onClick={() => setShowMenu(false)} className={mobileLinkStyle}>
-                Contacto
-              </Link>
-
-              {session ? (
-                <button
-                  onClick={() => signOut({ callbackUrl: '/auth/login' })}
-                  className="w-full mt-4 flex items-center justify-center gap-2 bg-background text-secondary py-4 rounded-xl font-bold shadow-lg shadow-red-200 active:scale-95 transition-transform"
-                >
-                  <LogOut className="w-5 h-5" />
-                  Cerrar Sesión
-                </button>
-              ) : (
-                <Link href="/auth/login" onClick={() => setShowMenu(false)} className="mt-4 block w-full text-center bg-background text-secondary py-4 rounded-xl font-bold shadow-lg">
-                  Iniciar Sesión
-                </Link>
               )}
-              <RadixSwitch />
-            </nav>
+
+              <nav className="flex flex-col gap-1">
+                <Link href="/" onClick={() => setShowMenu(false)} className={mobileLinkStyle}>
+                  Inicio
+                </Link>
+                <Link href="/about" onClick={() => setShowMenu(false)} className={mobileLinkStyle}>
+                  Sobre Nosotros
+                </Link>
+                <Link href="/contact" onClick={() => setShowMenu(false)} className={mobileLinkStyle}>
+                  Contacto
+                </Link>
+                {(session?.user as any)?.role === 'doctor' && (
+                  <Link href="/doctor" onClick={() => setShowMenu(false)} className={mobileLinkStyle}>
+                    Panel Médico
+                  </Link>
+                )}
+
+                {session ? (
+                  <button
+                    onClick={() => signOut({ callbackUrl: '/auth/login' })}
+                    className="w-full mt-4 flex items-center justify-center gap-2 bg-card text-foreground py-4 rounded-xl font-bold shadow-lg shadow-red-200 active:scale-95 transition-transform"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    Cerrar Sesión
+                  </button>
+                ) : (
+                  <Link href="/auth/login" onClick={() => setShowMenu(false)} className="mt-4 block w-full text-center bg-background text-foreground py-4 rounded-xl font-bold shadow-lg">
+                    Iniciar Sesión
+                  </Link>
+                )}
+                <div className="flex justify-center mt-4">
+                  <ThemeToggle />
+                </div>
+              </nav>
+            </div>
           </div>
-        </div>
-      )}
-    </header>
+        )
+      }
+    </header >
   );
 }
