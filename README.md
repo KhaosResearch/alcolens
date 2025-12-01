@@ -1,69 +1,70 @@
-🏥 AlcoLens Pro - Plataforma de Evaluación de Salud Hepática
+# 🏥 AlcoLens Pro - Plataforma de Evaluación de Salud Hepática
 
 Sistema inteligente de cribado y monitorización de riesgo hepático mediante el test AUDIT-C. > Una solución "Mobile First" diseñada para conectar médicos y pacientes de forma segura, rápida y anónima.
 
-📋 Descripción del Proyecto
+## 📋 Descripción del Proyecto
 
 AlcoLens Pro es una aplicación web progresiva (PWA) desarrollada para facilitar la detección temprana de problemas relacionados con el consumo de alcohol. La plataforma permite a los profesionales sanitarios invitar a pacientes a realizar autoevaluaciones digitales, obteniendo resultados en tiempo real y estratificando el riesgo automáticamente.
 
-Objetivos Clave
+## Objetivos Clave
 
-Digitalización del Cribado: Sustituir el papel por un flujo digital seguro.
+- Digitalización del Cribado: Sustituir el papel por un flujo digital seguro.
 
-Accesibilidad Universal: Interfaz adaptativa que ajusta el lenguaje según el nivel educativo del paciente.
+- Accesibilidad Universal: Interfaz adaptativa que ajusta el lenguaje según el nivel educativo del paciente.
 
-Privacidad por Diseño: Recogida de datos anonimizada con identificadores hash.
+- Privacidad por Diseño: Recogida de datos anonimizada con identificadores hash.
 
-Eficiencia Clínica: Dashboard para médicos con KPIs epidemiológicos en tiempo real.
+- Eficiencia Clínica: Dashboard para médicos con KPIs epidemiológicos en tiempo real.
 
-🚀 Funcionalidades Principales
+## 🚀 Funcionalidades Principales
 
-👨‍⚕️ Para el Profesional Sanitario (Zona Privada)
+### 👨‍⚕️ Para el Profesional Sanitario (Zona Privada)
 
-Panel de Control (Dashboard): Visualización de estadísticas en tiempo real (Pacientes evaluados, alertas de alto riesgo, distribución epidemiológica).
+- Panel de Control (Dashboard): Visualización de estadísticas en tiempo real (Pacientes evaluados, alertas de alto riesgo, distribución epidemiológica).
 
-Gestión de Invitaciones: Generación de enlaces únicos y seguros (tokens) para enviar por SMS o WhatsApp sin coste (Deep Linking).
+- Gestión de Invitaciones: Generación de enlaces únicos y seguros (tokens) para enviar por SMS o WhatsApp sin coste (Deep Linking).
 
-Seguridad: Autenticación robusta con roles y protección de rutas mediante Middleware.
+- Seguridad: Autenticación robusta con roles y protección de rutas mediante Middleware.
 
-Visualización de Datos: Tablas filtrables por nivel de riesgo y gráficos de distribución.
+- Visualización de Datos: Tablas filtrables por nivel de riesgo y gráficos de distribución.
 
-👤 Para el Paciente (Zona Pública)
+### 👤 Para el Paciente (Zona Pública)
 
-Acceso Simplificado: Entrada vía enlace directo (Invitación) o Código QR (Sala de espera).
+- Acceso Simplificado: Entrada vía enlace directo (Invitación) o Código QR (Sala de espera).
 
-UX Adaptativa: El test cambia la redacción de las preguntas según el nivel de estudios seleccionado (Primaria / Secundaria / Universidad) para asegurar la comprensión.
+- UX Adaptativa: El test cambia la redacción de las preguntas según el nivel de estudios seleccionado (Primaria / Secundaria / Universidad) para asegurar la comprensión.
 
-Feedback Inmediato: Sistema de semáforo (Verde/Ámbar/Rojo) con recomendaciones personalizadas al finalizar.
+- Feedback Inmediato: Sistema de semáforo (Verde/Ámbar/Rojo) con recomendaciones personalizadas al finalizar.
 
-Consentimiento Granular: Control explícito sobre el almacenamiento de datos para investigación.
+- Consentimiento Granular: Control explícito sobre el almacenamiento de datos para investigación.
 
-🛠️ Stack Tecnológico
+## 🛠️ Stack Tecnológico
 
-El proyecto utiliza una arquitectura moderna basada en Next.js App Router:
+- El proyecto utiliza una arquitectura moderna basada en Next.js App Router:
 
-Core: Next.js 14+ (React Server Components).
+- Core: Next.js 14+ (React Server Components).
 
 Estilos: Tailwind CSS v4 (Motor Oxide, Variables CSS nativas oklch).
 
-Base de Datos: MongoDB + Mongoose (Esquemas tipados).
+- Base de Datos: MongoDB + Mongoose (Esquemas tipados).
 
-Autenticación: NextAuth.js (Credenciales, JWT, Middleware edge-compatible).
+- Autenticación: NextAuth.js (Credenciales, JWT, Middleware edge-compatible).
 
-UI/UX:
+## UI/UX:
 
-Iconos: lucide-react.
+- Iconos: lucide-react.
 
-Animaciones: framer-motion (Micro-interacciones líquidas).
+- Animaciones: framer-motion (Micro-interacciones líquidas).
 
-Componentes: Radix UI / Shadcn (Dialogs accesibles).
+- Componentes: Radix UI / Shadcn (Dialogs accesibles).
 
-Fuentes: next/font (Google Fonts: Montserrat + Fuentes Locales).
+- Fuentes: next/font (Google Fonts: Montserrat + Fuentes Locales).
 
-📂 Estructura del Proyecto
+## 📂 Estructura del Proyecto
 
 La arquitectura sigue el patrón de separación de responsabilidades de Next.js App Router:
 
+``` 
 src/
 ├── app/
 │   ├── api/                 # Endpoints Backend (Next.js API Routes)
@@ -89,32 +90,35 @@ src/
 │   ├── models/              # Modelos Mongoose (User, Response, Invitation)
 │   └── utils/               # Helpers (Cálculo de AUDIT-C, etc.)
 └── middleware.ts            # Guardián de rutas (Seguridad Edge)
+```
 
+## 🚦 Instalación y Despliegue
 
-🚦 Instalación y Despliegue
+### Requisitos Previos
 
-Requisitos Previos
+- Node.js 18+
 
-Node.js 18+
+- MongoDB (Local o Atlas)
 
-MongoDB (Local o Atlas)
+### Pasos
 
-Pasos
+- Clonar el repositorio:
 
-Clonar el repositorio:
-
+``
 git clone [https://github.com/tu-usuario/alcolens-pro.git](https://github.com/tu-usuario/alcolens-pro.git)
 cd alcolens-pro
+``
 
+### Instalar dependencias:
 
-Instalar dependencias:
-
+``
 npm install
+```
 
-
-Configurar Variables de Entorno:
+### Configurar Variables de Entorno:
 Crea un archivo .env en la raíz con lo siguiente:
 
+```
 # Base de Datos
 MONGODB_URI="mongodb+srv://..."
 
@@ -124,8 +128,10 @@ NEXTAUTH_URL="http://localhost:3000"
 
 # Configuración App
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
+```
 
+### Ejecutar en Desarrollo:
 
-Ejecutar en Desarrollo:
-
+```
 npm run dev
+```
