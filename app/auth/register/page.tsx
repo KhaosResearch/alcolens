@@ -14,6 +14,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+import LiquidButton from '@/app/lib/utils/button-liquids';
 
 // Componente auxiliar para Inputs con Icono
 const FormInput = ({
@@ -108,19 +109,16 @@ export default function RegisterPage() {
     <div className="min-h-screen flex flex-col justify-center items-center bg-background p-4 sm:p-6 font-sans">
 
       {/* TARJETA DE REGISTRO (Más ancha para el grid) */}
-      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl shadow-red-900/20 overflow-hidden animate-in zoom-in-95 duration-500">
-
-        {/* Barra decorativa */}
-        <div className="h-2 bg-gradient-to-r from-slate-100 via-background to-slate-100 opacity-80" />
+      <div className="w-full max-w-2xl bg-card rounded-3xl shadow-2xl shadow-red-900/20 overflow-hidden animate-in zoom-in-95 duration-500">
 
         <div className="p-8 sm:p-10">
-          <div className="mb-8 text-center sm:text-left border-b border-slate-100 pb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="mb-8 text-center sm:text-left border-b border-muted-foreground pb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
               <h2 className="text-2xl font-bold text-slate-800">Crear Cuenta</h2>
               <p className="text-slate-500 text-sm mt-1">Únase a nuestra red de especialistas médicos</p>
             </div>
-            <div className="hidden sm:block p-2 bg-red-50 rounded-full">
-              <Stethoscope className="w-6 h-6 text-background" />
+            <div className="hidden sm:block p-2 bg-primary/10 rounded-full">
+              <Stethoscope className="w-6 h-6 text-primary" />
             </div>
           </div>
 
@@ -128,8 +126,8 @@ export default function RegisterPage() {
 
             {/* Mensaje de Error */}
             {error && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 border border-red-100 text-red-600 text-sm animate-in shake">
-                <AlertCircle className="w-5 h-5 flex-shrink-0" />
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-red-100 text-red-600 text-sm animate-in shake">
+                <AlertCircle className="w-5 h-5 flex-shrink-0 text-primary" />
                 <p className="font-medium">{error}</p>
               </div>
             )}
@@ -203,20 +201,20 @@ export default function RegisterPage() {
             </div>
 
             {/* Disclaimer Legal */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+            <div className="bg-primary p-4 rounded-xl border border-primary-100">
               <div className="flex gap-3">
-                <input type="checkbox" required className="mt-1 w-4 h-4 text-background rounded focus:ring-background" />
-                <p className="text-xs text-slate-500 leading-relaxed">
+                <input type="checkbox" required className="mt-1 w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
+                <p className="text-xs text-bold text-foreground leading-relaxed">
                   Certifico que soy un profesional sanitario autorizado y acepto los <a href="#" className="text-background underline">Términos de Servicio</a> y la <a href="#" className="text-background underline">Política de Privacidad</a> de AlcoLens Pro.
                 </p>
               </div>
             </div>
 
             {/* Botón de Acción */}
-            <button
+            <LiquidButton
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-4 px-4 bg-background hover:bg-[#b03030] text-white font-bold rounded-xl shadow-lg shadow-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-background disabled:opacity-70 disabled:cursor-not-allowed transition-all hover:-translate-y-0.5"
+              className="w-full font-bold"
             >
               {loading ? (
                 <>
@@ -229,14 +227,14 @@ export default function RegisterPage() {
                   <ArrowRight className="h-5 w-5" />
                 </>
               )}
-            </button>
+            </LiquidButton>
           </form>
 
           {/* Footer */}
           <div className="mt-8 pt-6 border-t border-slate-100 text-center">
             <p className="text-sm text-slate-500">
               ¿Ya tiene credenciales?{' '}
-              <Link href="/auth/login" className="font-bold text-background hover:underline transition-colors">
+              <Link href="/auth/login" className="font-bold text-primary hover:underline transition-colors">
                 Iniciar Sesión
               </Link>
             </p>

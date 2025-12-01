@@ -11,7 +11,7 @@ export default function LogoIcon({ className = "w-16 h-16" }: { className?: stri
       {/* 1. La Burbuja Blanca */}
       <path
         d="M50 5 C25.147 5 5 22.9 5 45 C5 59.5 14.5 72.1 29 79 L20 95 L40 84 C43.2 84.6 46.6 85 50 85 C74.853 85 95 67.1 95 45 C95 22.9 74.853 5 50 5Z"
-        fill="var(--background)"
+        fill="var(--secondary)"
       />
 
       {/* 2. La Letra A (Color Rojo Corporativo) */}

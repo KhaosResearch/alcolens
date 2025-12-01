@@ -131,7 +131,7 @@ export default function DoctorDashboard() {
   };
 
   return (
-    <div className={`${primaryFontRegular.className} min-h-screen bg-transparent font-sans text-slate-600 p-6 sm:p-10`}>
+    <div className={`${primaryFontRegular.className} min-h-screen bg-background font-sans text-foreground p-6 sm:p-10`}>
       <div className="max-w-7xl mx-auto space-y-8">
 
         {/* HEADER */}
@@ -155,7 +155,7 @@ export default function DoctorDashboard() {
               <DialogTrigger asChild>
                 <LiquidButton
                   onClick={() => { setGeneratedLink(''); setTargetPhone(''); setTargetNih(''); }}
-                  className="flex items-center gap-2 px-6 py-3 bg-background text-primary font-bold rounded-xl shadow-lg shadow-black/10 transition-all hover:scale-105 hover:shadow-xl"
+                  className="flex items-center gap-2 px-6 py-3 bg-card shadow-2xl border text-primary font-bold rounded-xl shadow-lg shadow-black/10 transition-all hover:scale-105 hover:shadow-xl"
                 >
                   <MessageSquare className="w-5 h-5" />
                   <span>Invitar Paciente</span>
@@ -256,7 +256,7 @@ export default function DoctorDashboard() {
         {/* CHARTS SECTION */}
         <div className={`${primaryFontBold.className} grid lg:grid-cols-3 gap-6`}>
           {/* Pie Chart */}
-          <div className="lg:col-span-1 bg-white p-6 rounded-3xl shadow-xl shadow-red-900/5 border border-slate-100 flex flex-col">
+          <div className="lg:col-span-1 bg-card p-6 rounded-3xl shadow-xl shadow-primary/5 border border-border flex flex-col">
             <h3 className={`${primaryFontBold.className} text-primary mb-6`}>Distribución de Riesgo</h3>
             <div className="flex-1 min-h-[250px]">
               <ResponsiveContainer width="100%" height="100%">
@@ -282,8 +282,8 @@ export default function DoctorDashboard() {
           </div>
 
           {/* Recent Activity Table */}
-          <div className="lg:col-span-2 bg-white rounded-3xl shadow-xl shadow-red-900/5 border border-slate-100 overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
+          <div className="lg:col-span-2 bg-card rounded-3xl shadow-xl shadow-primary/5 border border-border overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-border flex justify-between items-center">
               <h3 className={`${primaryFontBold.className} text-primary`}>Actividad Reciente</h3>
               <div className="flex gap-2">
                 {['all', 'high', 'ambar', 'low', 'cero'].map((filter) => (
@@ -300,7 +300,7 @@ export default function DoctorDashboard() {
 
             <div className="overflow-x-auto flex-1">
               <table className="w-full text-left">
-                <thead className="bg-slate-50 text-xs uppercase text-slate-400 font-bold">
+                <thead className="bg-muted/50 text-xs uppercase text-muted-foreground font-bold">
                   <tr>
                     <th className="px-6 py-4">Fecha</th>
                     <th className="px-6 py-4">Paciente</th>
@@ -308,22 +308,22 @@ export default function DoctorDashboard() {
                     <th className="px-6 py-4">Nivel</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-border">
                   {loading ? (
                     <tr><td colSpan={4} className="p-8 text-center text-slate-400">Cargando datos...</td></tr>
                   ) : filteredResults.slice(0, 5).map((row) => (
-                    <tr key={row._id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 text-sm text-slate-600">
+                    <tr key={row._id} className="hover:bg-muted/50 transition-colors">
+                      <td className="px-6 py-4 text-sm text-muted-foreground">
                         {new Date(row.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                           <span className={`w-2 h-2 rounded-full ${row.sex === 'man' ? 'bg-blue-500' : 'bg-pink-500'}`}></span>
                           {row.sex === 'man' ? 'Hombre' : 'Mujer'}
                           <span className="text-xs text-slate-400 ml-1 font-mono">#{row.patientId.substring(0, 4)}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-center font-bold text-slate-700">
+                      <td className="px-6 py-4 text-center font-bold text-foreground">
                         {row.totalScore}
                       </td>
                       <td className="px-6 py-4">
@@ -347,19 +347,19 @@ export default function DoctorDashboard() {
 
 function KPICard({ title, value, icon: Icon, trend, isWarning = false }: any) {
   return (
-    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-lg shadow-slate-200/50 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+    <div className="bg-card p-6 rounded-3xl border border-border shadow-lg shadow-primary/5 hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
       <div className="flex justify-between items-start mb-4">
-        <div className={`p-3 rounded-2xl ${isWarning ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-slate-600'}`}>
+        <div className={`p-3 rounded-2xl ${isWarning ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'}`}>
           <Icon className="w-6 h-6" />
         </div>
         {trend && (
-          <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${isWarning ? 'bg-rose-50 text-rose-600 border-rose-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+          <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${isWarning ? 'bg-destructive/10 text-destructive border-destructive/20' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20'}`}>
             {trend}
           </span>
         )}
       </div>
-      <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{title}</p>
-      <h4 className="text-3xl font-black text-slate-800">{value}</h4>
+      <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-1">{title}</p>
+      <h4 className="text-3xl font-black text-foreground">{value}</h4>
     </div>
   );
 }

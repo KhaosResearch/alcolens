@@ -23,13 +23,13 @@ export default function AboutPage() {
                     transition={{ duration: 0.5 }}
                     className="text-center space-y-6 mb-20 mt-10"
                 >
-                    <div className="inline-block p-2 px-4 rounded-full bg-primary/10 text-primary font-bold text-sm mb-4 tracking-wider uppercase">
+                    <div className="inline-block p-2 px-4 rounded-full bg-card/ shadow-2xl text-foreground font-bold text-sm mb-4 tracking-wider uppercase border">
                         Sobre Nosotros
                     </div>
                     <h1 className={`${primaryFontBold.className} text-4xl sm:text-6xl text-primary leading-tight`}>
                         Tecnología para la<br />Salud Preventiva
                     </h1>
-                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-xl text-foreground max-w-2xl mx-auto leading-relaxed">
                         Transformando la detección temprana del consumo de alcohol mediante herramientas digitales accesibles, privadas y validadas clínicamente.
                     </p>
                 </motion.div>
@@ -49,7 +49,7 @@ export default function AboutPage() {
                         <h2 className={`${primaryFontBold.className} text-3xl text-primary mb-4`}>
                             ¿Qué es Alcolens?
                         </h2>
-                        <p className="text-muted-foreground text-lg leading-relaxed">
+                        <p className="text-foreground text-lg leading-relaxed">
                             Alcolens es una plataforma digital diseñada para facilitar el cribado y la intervención breve en el consumo de alcohol. Utilizamos el cuestionario <strong>AUDIT-C</strong>, el estándar de oro recomendado por la OMS, para proporcionar evaluaciones rápidas y precisas en entornos clínicos y personales.
                         </p>
                     </motion.div>
@@ -61,13 +61,13 @@ export default function AboutPage() {
                         transition={{ duration: 0.5, delay: 0.4 }}
                         className="bg-card border border-border p-8 sm:p-10 rounded-[2rem] shadow-xl shadow-secondary/5 backdrop-blur-sm hover:shadow-secondary/10 transition-shadow"
                     >
-                        <div className="w-14 h-14 bg-secondary/10 rounded-2xl flex items-center justify-center mb-6 text-secondary">
+                        <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 text-primary">
                             <Brain className="w-8 h-8" />
                         </div>
                         <h2 className={`${primaryFontBold.className} text-3xl text-primary mb-4`}>
                             Ciencia y Tecnología
                         </h2>
-                        <p className="text-muted-foreground text-lg leading-relaxed">
+                        <p className="text-foreground text-lg leading-relaxed">
                             Combinamos la evidencia científica con una experiencia de usuario moderna. Nuestro algoritmo no solo calcula una puntuación, sino que estratifica el riesgo basándose en variables clínicas como el sexo biológico, ofreciendo recomendaciones personalizadas e inmediatas.
                         </p>
                     </motion.div>
@@ -107,7 +107,7 @@ export default function AboutPage() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     viewport={{ once: true }}
-                    className="w-full bg-gradient-to-br from-primary/5 to-secondary/5 border border-primary/10 rounded-[2.5rem] p-10 sm:p-16 text-center relative overflow-hidden"
+                    className="w-full bg-card border border-border rounded-[2.5rem] p-10 sm:p-16 text-center relative overflow-hidden"
                 >
                     <div className="relative z-10">
                         <h3 className={`${primaryFontBold.className} text-3xl sm:text-4xl text-primary mb-6`}>
@@ -117,7 +117,7 @@ export default function AboutPage() {
                             Es rápido, anónimo y gratuito. Conozca su nivel de riesgo en menos de 2 minutos.
                         </p>
                         <div className="flex justify-center">
-                            <LiquidButton href="/patient/audit" className="bg-primary text-primary-foreground px-10 py-4 rounded-full text-lg shadow-xl shadow-primary/20 hover:shadow-primary/30">
+                            <LiquidButton href="/patient/audit">
                                 Realizar Test AUDIT-C
                             </LiquidButton>
                         </div>

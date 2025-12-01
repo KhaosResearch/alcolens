@@ -5,7 +5,6 @@ export function RadixSwitch() {
   return (
     <Label className="flex items-center gap-x-3">
       <Switch />
-      Airplane Mode
     </Label>
   );
 }

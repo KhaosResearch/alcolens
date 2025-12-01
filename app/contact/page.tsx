@@ -60,13 +60,13 @@ export default function ContactPage() {
                     transition={{ duration: 0.5 }}
                     className="text-center space-y-6 mb-16 mt-10"
                 >
-                    <div className="inline-block p-2 px-4 rounded-full bg-secondary/10 text-secondary font-bold text-sm mb-4 tracking-wider uppercase">
+                    <div className="inline-block p-2 px-4 rounded-full bg-card text-foreground shadow-2xl border font-bold text-sm mb-4 tracking-wider uppercase">
                         Contacto
                     </div>
                     <h1 className={`${primaryFontBold.className} text-4xl sm:text-6xl text-primary leading-tight`}>
                         Estamos aquí para<br />ayudarte
                     </h1>
-                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                    <p className="text-xl text-foreground max-w-2xl mx-auto leading-relaxed">
                         ¿Tienes preguntas sobre Alcolens o quieres saber más sobre nuestra metodología? Escríbenos.
                     </p>
                 </motion.div>
@@ -84,13 +84,13 @@ export default function ContactPage() {
                             </div>
                             <h3 className={`${primaryFontBold.className} text-2xl text-primary mb-2`}>Envíanos un mensaje</h3>
                             <p className="text-muted-foreground">
-                                O escríbenos directamente a <a href="mailto:info@alcolens.com" className="text-primary font-bold hover:underline">info@alcolens.com</a>
+                                O escríbenos directamente a <a href="mailto:info@alcolens.com" className="text-primary font-bold hover:underline">alcolenscontact@gmail.com</a>
                             </p>
                         </div>
 
                         {formStatus === 'success' ? (
                             <div className="text-center py-12 space-y-4 animate-in fade-in zoom-in">
-                                <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <div className="w-16 h-16 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-4">
                                     <Send className="w-8 h-8" />
                                 </div>
                                 <h4 className="text-xl font-bold text-foreground">¡Mensaje Enviado!</h4>
@@ -154,7 +154,7 @@ export default function ContactPage() {
                                 <LiquidButton
                                     type="submit"
                                     disabled={formStatus === 'submitting'}
-                                    className="w-full bg-primary text-primary-foreground py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/20 hover:shadow-primary/30 disabled:opacity-70 disabled:cursor-not-allowed"
+                                    className="w-full font-bold"
                                 >
                                     {formStatus === 'submitting' ? 'Enviando...' : 'Enviar Mensaje'}
                                 </LiquidButton>

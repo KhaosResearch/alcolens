@@ -166,10 +166,10 @@ export default function AuditPage() {
               <div className="flex justify-center">
                 <div className={cn(
                   "w-32 h-32 rounded-full flex flex-col items-center justify-center border-4 shadow-xl transition-colors duration-500",
-                  result.color === 'green' ? "border-green-500 bg-green-50 text-green-700" :
-                    result.color === 'yellow' ? "border-yellow-500 bg-yellow-50 text-yellow-700" :
-                      result.color === 'amber' ? "border-orange-500 bg-orange-50 text-orange-700" :
-                        "border-red-500 bg-red-50 text-red-700"
+                  result.color === 'green' ? "border-green-500 bg-green-500/10 text-green-700 dark:text-green-400" :
+                    result.color === 'yellow' ? "border-yellow-500 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400" :
+                      result.color === 'amber' ? "border-orange-500 bg-orange-500/10 text-orange-700 dark:text-orange-400" :
+                        "border-red-500 bg-red-500/10 text-red-700 dark:text-red-400"
                 )}>
                   <span className="text-4xl font-bold">{score}</span>
                   <span className="text-xs font-medium uppercase tracking-wider">Puntos</span>
@@ -179,10 +179,10 @@ export default function AuditPage() {
               {/* Risk Text */}
               <div className="text-center space-y-2">
                 <h3 className={cn("text-2xl font-bold",
-                  result.color === 'green' ? "text-green-600" :
-                    result.color === 'yellow' ? "text-yellow-600" :
-                      result.color === 'amber' ? "text-orange-600" :
-                        "text-red-600"
+                  result.color === 'green' ? "text-green-600 dark:text-green-400" :
+                    result.color === 'yellow' ? "text-yellow-600 dark:text-yellow-400" :
+                      result.color === 'amber' ? "text-orange-600 dark:text-orange-400" :
+                        "text-red-600 dark:text-red-400"
                 )}>
                   {result.title}
                 </h3>
