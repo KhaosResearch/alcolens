@@ -1,0 +1,6 @@
+services:
+  alcolens:
+    image: alcolens
+    build:
+      context: .
+      dockerfile: ./Dockerfile
