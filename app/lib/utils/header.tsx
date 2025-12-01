@@ -21,7 +21,7 @@ export default function Header() {
 
   return (
     <header className={`${primaryFontBold.className} bg-primary backdrop-blur-md border-b border-secondary/10 sticky top-0 z-50 font-sans shadow-lg shadow-red-900/10`}>
-      <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center relative">
+      <div className="md:flex max-w-7xl mx-auto px-4 h-16 flex justify-between items-center relative gap-10">
         <div className="flex-shrink-0 flex items-center z-20">
           <Link href="/" className="flex items-center gap-3 group">
             <LogoIcon className="h-10 w-10 sm:h-12 sm:w-12 group-hover:scale-105 transition-transform drop-shadow-sm" />
@@ -42,9 +42,9 @@ export default function Header() {
           <Link href="/contact" className={linkStyle}>Contacto</Link>
         </nav>
 
-        <div className="flex items-center gap-4 flex-shrink-0 z-20">
+        <div className="flex md:flex items-center gap-2 flex-shrink-0 z-20">
           {session && (
-            <div className="hidden md:flex flex-col items-end border-r border-secondary/20 pr-5 mr-1">
+            <div className="hidden lg:flex flex-col items-end border-r border-secondary/20 pr-5 mr-1">
               <p className={` ${textShadow} text-sm font-bold text-secondary leading-none tracking-wide shadow-black/5 drop-shadow-sm`}>
                 {session.user?.name}
               </p>

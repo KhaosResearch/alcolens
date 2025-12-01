@@ -1,70 +1,75 @@
 'use client';
 
-import React from 'react';
-import { motion, HTMLMotionProps } from 'framer-motion';
-import { useRouter } from 'next/navigation'; // 1. Importamos el router
+import * as React from 'react';
+import { motion, type HTMLMotionProps } from 'motion/react';
+import { cva, type VariantProps } from 'class-variance-authority';
 
-// Definimos los props extendiendo los de un botón HTML normal + los de Motion
-interface LiquidButtonProps extends HTMLMotionProps<"button"> {
-    children: React.ReactNode;
-    className?: string;
-    href?: string; // 2. Nueva propiedad opcional para redirección
-}
+import { cn } from '@/app/lib/utils';
 
-export default function LiquidButton({ children, className, href, onClick, ...props }: LiquidButtonProps) {
-    const router = useRouter(); // 3. Inicializamos el router
+import Link from 'next/link';
 
-    // 4. Función inteligente de clic
-    const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-        // Si hay un evento onClick original (pasado desde fuera), lo ejecutamos primero
-        if (onClick) {
-            onClick(e);
-        }
+const buttonVariants = cva(
+    "relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium cursor-pointer overflow-hidden disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive [background:_linear-gradient(var(--liquid-button-color)_0_0)_no-repeat_calc(200%-var(--liquid-button-fill,0%))_100%/200%_var(--liquid-button-fill,0.2em)] hover:[--liquid-button-fill:100%] hover:[--liquid-button-delay:0.3s] [transition:_background_0.3s_var(--liquid-button-delay,0s),_color_0.3s_var(--liquid-button-delay,0s),_background-position_0.3s_calc(0.3s_-_var(--liquid-button-delay,0s))] focus:outline-none",
+    {
+        variants: {
+            variant: {
+                default:
+                    'text-primary hover:text-primary-foreground !bg-muted [--liquid-button-color:var(--primary)]',
+                outline:
+                    'border !bg-background dark:!bg-input/30 dark:border-input [--liquid-button-color:var(--primary)]',
+                secondary:
+                    'text-secondary hover:text-secondary-foreground !bg-muted [--liquid-button-color:var(--secondary)]',
+            },
+            size: {
+                default: 'h-10 px-4 py-2 has-[>svg]:px-3',
+                sm: 'h-9 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5',
+                lg: 'h-12 rounded-xl px-8 has-[>svg]:px-6',
+                icon: 'size-10',
+            },
+        },
+        defaultVariants: {
+            variant: 'default',
+            size: 'default',
+        },
+    },
+);
 
-        // Si le hemos pasado una ruta (href), redirigimos
-        if (href) {
-            router.push(href);
-        }
+const MotionLink = motion.create(Link);
+
+type LiquidButtonProps = HTMLMotionProps<'button'> &
+    VariantProps<typeof buttonVariants> & {
+        href?: string;
     };
+
+export default function LiquidButton({
+    className,
+    variant,
+    size,
+    href,
+    ...props
+}: LiquidButtonProps) {
+    const commonProps = {
+        whileTap: { scale: 0.95 },
+        whileHover: { scale: 1.05 },
+        className: cn(buttonVariants({ variant, size, className })),
+    };
+
+    if (href) {
+        return (
+            <MotionLink
+                href={href}
+                {...commonProps}
+                {...(props as any)}
+            />
+        );
+    }
 
     return (
         <motion.button
-            initial="initial"
-            whileHover="hover"
-            whileTap="tap"
-            onClick={handleClick} // 5. Conectamos nuestro handler
-            className={`
-        group relative overflow-hidden rounded-xl border border-primary 
-        bg-white px-6 py-3 font-bold text-primary 
-        /* Pequeño delay en el color del texto para que espere al líquido */
-        transition-colors duration-200 ease-in-out delay-75
-        hover:text-white
-        ${className || ''}
-      `}
-            {...props}
-        >
-            {/* 1. EL LÍQUIDO (Fondo animado) */}
-            <motion.div
-                className="absolute inset-0 z-0 bg-primary"
-                variants={{
-                    initial: { y: "100%" }, // Escondido abajo
-                    hover: { y: "0%" },     // Sube cubriendo todo
-                    tap: { scale: 0.95 }    // Efecto sutil al pulsar
-                }}
-                // Configuración de física para que parezca líquido
-                transition={{
-                    type: "spring",
-                    stiffness: 120, // Tensión del muelle
-                    damping: 20,    // Fricción (para que no rebote eternamente)
-                    mass: 0.5       // Ligereza
-                }}
-            />
-
-            {/* 2. EL CONTENIDO */}
-            {/* z-10 para que flote encima del líquido rojo */}
-            <span className="relative z-10 flex items-center justify-center gap-2">
-                {children}
-            </span>
-        </motion.button>
+            {...commonProps}
+            {...(props as any)}
+        />
     );
 }
+
+export { LiquidButton, type LiquidButtonProps };

@@ -42,7 +42,7 @@ export default function LandingPage() {
 
         <LiquidButton
           href="/patient/audit"
-          className="w-full"
+          className="w-fit"
         >
           <span>Comenzar Cuestionario</span>
           <ArrowRight className="w-5 h-5" />
