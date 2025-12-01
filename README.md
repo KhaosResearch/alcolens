@@ -111,7 +111,7 @@ cd alcolens-pro
 
 ### Instalar dependencias:
 
-``
+```
 npm install
 ```
 
