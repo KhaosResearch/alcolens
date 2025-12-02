@@ -274,13 +274,6 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
-      
-      {/* Footer Legal Global */}
-      <p className="mt-8 text-xs text-primary-foreground/60 text-center max-w-sm">
-        Registro seguro encriptado SSL. <br/>
-        AlcoLens Pro v2.0 &copy; {new Date().getFullYear()}
-      </p>
-
     </div>
   );
 }
