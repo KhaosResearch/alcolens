@@ -149,7 +149,7 @@ export default function RegisterPage() {
                   type="password"
                   required
                   placeholder="Código proporcionado por administración"
-                  className="block w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#CD4242]/20 focus:border-[#CD4242] transition-all font-medium text-slate-900"
+                  className="block w-full pl-12 pr-4 py-3 bg-background border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#CD4242]/20 focus:border-[#CD4242] transition-all font-medium text-slate-900"
                   // Asegúrate de añadir 'hospitalCode' a tu estado 'formData' y 'handleChange'
                   value={formData.hospitalCode} 
                   onChange={handleChange}
