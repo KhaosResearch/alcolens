@@ -14,18 +14,19 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
+// Asegúrate de que esta ruta apunta a donde guardaste tu componente LiquidButton
 import LiquidButton from '@/app/lib/utils/button-liquids';
 
-// Componente auxiliar para Inputs con Icono
+// Componente auxiliar para Inputs con Icono (Adaptado al Tema)
 const FormInput = ({
   label, id, type = "text", icon: Icon, placeholder, value, onChange, colSpan = "col-span-1"
 }: any) => (
   <div className={`space-y-1.5 ${colSpan}`}>
-    <label htmlFor={id} className="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
+    <label htmlFor={id} className="block text-xs font-bold text-muted-foreground uppercase tracking-wider ml-1">
       {label}
     </label>
     <div className="relative group">
-      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-background transition-colors">
+      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
         <Icon className="h-5 w-5" />
       </div>
       <input
@@ -34,7 +35,7 @@ const FormInput = ({
         type={type}
         required
         placeholder={placeholder}
-        className="block w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 placeholder:text-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-background/20 focus:border-background transition-all font-medium"
+        className="block w-full pl-12 pr-4 py-3 bg-background border border-input rounded-xl text-foreground placeholder:text-muted-foreground focus:bg-background focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
         value={value}
         onChange={onChange}
       />
@@ -51,6 +52,7 @@ export default function RegisterPage() {
     confirmPassword: '',
     specialization: '',
     medicalLicense: '',
+    hospitalCode: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -106,16 +108,17 @@ export default function RegisterPage() {
   }
 
   return (
+    // FONDO: Usamos bg-primary (Tu rojo corporativo)
     <div className="min-h-screen flex flex-col justify-center items-center bg-background p-4 sm:p-6 font-sans">
 
-      {/* TARJETA DE REGISTRO (Más ancha para el grid) */}
-      <div className="w-full max-w-2xl bg-card rounded-3xl shadow-2xl shadow-red-900/20 overflow-hidden animate-in zoom-in-95 duration-500">
-
+      {/* TARJETA DE REGISTRO */}
+      <div className="w-full max-w-2xl bg-card text-card-foreground rounded-3xl shadow-2xl shadow-black/20 overflow-hidden animate-in zoom-in-95 duration-500 border border-border">
+        
         <div className="p-8 sm:p-10">
-          <div className="mb-8 text-center sm:text-left border-b border-muted-foreground pb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="mb-8 text-center sm:text-left border-b border-border pb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div>
-              <h2 className="text-2xl font-bold text-slate-800">Crear Cuenta</h2>
-              <p className="text-slate-500 text-sm mt-1">Únase a nuestra red de especialistas médicos</p>
+              <h2 className="text-2xl font-bold text-foreground">Crear Cuenta</h2>
+              <p className="text-muted-foreground text-sm mt-1">Únase a nuestra red de especialistas médicos</p>
             </div>
             <div className="hidden sm:block p-2 bg-primary/10 rounded-full">
               <Stethoscope className="w-6 h-6 text-primary" />
@@ -126,11 +129,35 @@ export default function RegisterPage() {
 
             {/* Mensaje de Error */}
             {error && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-card border border-red-100 text-red-600 text-sm animate-in shake">
-                <AlertCircle className="w-5 h-5 flex-shrink-0 text-primary" />
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm animate-in shake">
+                <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 <p className="font-medium">{error}</p>
               </div>
             )}
+
+            <div className="col-span-1 sm:col-span-2">
+              <label htmlFor="hospitalCode" className="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">
+                Código de Acceso del Centro
+              </label>
+              <div className="relative group mt-1">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-[#CD4242]">
+                  <Lock className="h-5 w-5" />
+                </div>
+                <input
+                  id="hospitalCode"
+                  name="hospitalCode"
+                  type="password"
+                  required
+                  placeholder="Código proporcionado por administración"
+                  className="block w-full pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#CD4242]/20 focus:border-[#CD4242] transition-all font-medium text-slate-900"
+                  // Asegúrate de añadir 'hospitalCode' a tu estado 'formData' y 'handleChange'
+                  value={formData.hospitalCode} 
+                  onChange={handleChange}
+                />
+              </div>
+              <p className="text-xs text-slate-400 mt-1 ml-1">Requerido para validar su identidad profesional.</p>
+            </div>
+
 
             {/* GRID DE DATOS */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -201,29 +228,35 @@ export default function RegisterPage() {
             </div>
 
             {/* Disclaimer Legal */}
-            <div className="bg-primary p-4 rounded-xl border border-primary-100">
+            <div className="bg-muted/30 p-4 rounded-xl border border-border">
               <div className="flex gap-3">
-                <input type="checkbox" required className="mt-1 w-4 h-4 text-primary-500 rounded focus:ring-primary-500" />
-                <p className="text-xs text-bold text-foreground leading-relaxed">
-                  Certifico que soy un profesional sanitario autorizado y acepto los <a href="#" className="text-background underline">Términos de Servicio</a> y la <a href="#" className="text-background underline">Política de Privacidad</a> de AlcoLens Pro.
+                <input 
+                  type="checkbox" 
+                  required 
+                  className="mt-1 w-4 h-4 text-primary border-input rounded focus:ring-primary" 
+                />
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Certifico que soy un profesional sanitario autorizado y acepto los <a href="#" className="text-primary hover:underline font-medium">Términos de Servicio</a> y la <a href="#" className="text-primary hover:underline font-medium">Política de Privacidad</a> de AlcoLens Pro.
                 </p>
               </div>
             </div>
 
-            {/* Botón de Acción */}
+            
+
+            {/* Botón de Acción con LiquidButton */}
             <LiquidButton
               type="submit"
               disabled={loading}
-              className="w-full font-bold"
+              className="w-full flex justify-center items-center font-bold text-base"
             >
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin h-5 w-5" />
-                  <span>Procesando solicitud...</span>
+                  <Loader2 className="animate-spin h-5 w-5 mr-2" />
+                  <span>Procesando...</span>
                 </>
               ) : (
                 <>
-                  <span>Registrar Cuenta</span>
+                  <span className="mr-2">Registrar Cuenta</span>
                   <ArrowRight className="h-5 w-5" />
                 </>
               )}
@@ -231,8 +264,8 @@ export default function RegisterPage() {
           </form>
 
           {/* Footer */}
-          <div className="mt-8 pt-6 border-t border-slate-100 text-center">
-            <p className="text-sm text-slate-500">
+          <div className="mt-8 pt-6 border-t border-border text-center">
+            <p className="text-sm text-muted-foreground">
               ¿Ya tiene credenciales?{' '}
               <Link href="/auth/login" className="font-bold text-primary hover:underline transition-colors">
                 Iniciar Sesión
@@ -241,6 +274,13 @@ export default function RegisterPage() {
           </div>
         </div>
       </div>
+      
+      {/* Footer Legal Global */}
+      <p className="mt-8 text-xs text-primary-foreground/60 text-center max-w-sm">
+        Registro seguro encriptado SSL. <br/>
+        AlcoLens Pro v2.0 &copy; {new Date().getFullYear()}
+      </p>
+
     </div>
   );
 }
