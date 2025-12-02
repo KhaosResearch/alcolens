@@ -7,7 +7,15 @@ export async function POST(request: NextRequest) {
     await connectDB();
 
     const body = await request.json();
-    const { name, email, password, specialization, medicalLicense, role } = body;
+    const { name, email, password, specialization, medicalLicense, role, hospitalCode } = body;
+    const SECRET_HOSPITAL_CODE = process.env.HOSPITAL_CODE; 
+
+    if (hospitalCode !== SECRET_HOSPITAL_CODE) {
+      return NextResponse.json(
+        { error: 'Código de acceso no válido. Solicítelo a su supervisor.' },
+        { status: 403 }
+      );
+    }
 
     // Validar campos requeridos
     if (!name || !email || !password || !role) {
