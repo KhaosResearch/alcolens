@@ -199,7 +199,7 @@ export default function DoctorDashboard() {
                           <input
                             type="text"
                             placeholder="12345678"
-                            className="w-full px-4 py-3 bg-white border text-sm border-slate-200 rounded-xl focus:ring-2 focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium uppercase"
+                            className="w-full px-4 py-3 bg-white border text-black text-sm border-slate-200 rounded-xl focus:ring-2 focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium uppercase"
                             value={targetNih}
                             onChange={e => setTargetNih(e.target.value)}
                           />
@@ -213,7 +213,7 @@ export default function DoctorDashboard() {
                             <input
                               type="tel"
                               placeholder="555 777 888"
-                              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 text-sm focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium"
+                              className="w-full pl-12 text-black pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 text-sm focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium"
                               value={targetPhone}
                               onChange={e => setTargetPhone(e.target.value)}
                             />
