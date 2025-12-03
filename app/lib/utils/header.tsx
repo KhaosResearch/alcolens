@@ -7,7 +7,7 @@ import { Menu, X, LogOut, User } from "lucide-react";
 import LogoIcon from "@/app/lib/utils/icono";
 import LogoText from "@/app/lib/utils/logoText";
 import { primaryFontBold } from "./fonts";
-import { ThemeToggle } from "@/app/components/theme-toggle";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const textShadow = "[text-shadow:_0_1px_3px_rgb(0_0_0_/_40%)]";
 
