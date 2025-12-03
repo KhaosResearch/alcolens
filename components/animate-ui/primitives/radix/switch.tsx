@@ -10,7 +10,7 @@ import {
   type LegacyAnimationControls,
 } from 'motion/react';
 
-import { getStrictContext } from '@/lib/get-strict-context';
+import { getStrictContext } from '@/app/lib/get-strict-context';
 import { useControlledState } from '@/hooks/use-controlled-state';
 
 type SwitchContextType = {
@@ -62,10 +62,10 @@ type SwitchThumbProps = Omit<
 > &
   HTMLMotionProps<'div'> & {
     pressedAnimation?:
-      | TargetAndTransition
-      | VariantLabels
-      | boolean
-      | LegacyAnimationControls;
+    | TargetAndTransition
+    | VariantLabels
+    | boolean
+    | LegacyAnimationControls;
   };
 
 function SwitchThumb({

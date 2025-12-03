@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { primaryFontRegular } from "./lib/utils/fonts";
 import "./globals.css";
 import { AuthProvider } from "@/app/lib/providers";
-import { ThemeProvider } from "@/app/components/theme-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 import Header from "@/app/lib/utils/header";
 import Footer from "./lib/utils/footer";
 import { CursorProvider, Cursor, CursorFollow } from "@/components/animate-ui/components/animate/cursor";

@@ -11,9 +11,13 @@ import {
   CalendarCheck,
   Smartphone,
   Filter,
-  Activity
+  Activity,
+  Copy, // Importamos icono para copiar
+  Check // Importamos icono para feedback visual
 } from 'lucide-react';
+// Tus rutas de fuentes originales
 import { primaryFontBold, primaryFontRegular } from '@/app/lib/utils/fonts';
+// Tus componentes originales
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/animate-ui/components/radix/dialog';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import LiquidButton from '@/app/lib/utils/button-liquids';
@@ -37,6 +41,8 @@ export default function DoctorDashboard() {
   const [targetPhone, setTargetPhone] = useState('');
   const [targetNih, setTargetNih] = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
+  // Estado para feedback visual al copiar
+  const [isCopied, setIsCopied] = useState(false);
 
   // Fetch Data
   const fetchResults = async () => {
@@ -61,12 +67,11 @@ export default function DoctorDashboard() {
     const today = results.filter(r => new Date(r.createdAt).toDateString() === new Date().toDateString()).length;
     const avgScore = total > 0 ? (results.reduce((acc, curr) => acc + curr.totalScore, 0) / total).toFixed(1) : 0;
 
-    // Data for Pie Chart
     const riskData = [
-      { name: 'Alto Riesgo', value: results.filter(r => r.levelResult === 'red').length, color: '#f43f5e' }, // rose-500
-      { name: 'Riesgo Medio', value: results.filter(r => r.levelResult === 'amber').length, color: '#fb923c' }, // orange-400
-      { name: 'Bajo Riesgo', value: results.filter(r => r.levelResult === 'yellow').length, color: '#fcd34d' }, // amber-300
-      { name: 'Sin Riesgo', value: results.filter(r => r.levelResult === 'green').length, color: '#34d399' }, // emerald-400
+      { name: 'Alto Riesgo', value: results.filter(r => r.levelResult === 'red').length, color: '#f43f5e' },
+      { name: 'Riesgo Medio', value: results.filter(r => r.levelResult === 'amber').length, color: '#fb923c' },
+      { name: 'Bajo Riesgo', value: results.filter(r => r.levelResult === 'yellow').length, color: '#fcd34d' },
+      { name: 'Sin Riesgo', value: results.filter(r => r.levelResult === 'green').length, color: '#34d399' },
     ].filter(item => item.value > 0);
 
     return { total, highRiskCount, today, avgScore, riskData };
@@ -82,25 +87,39 @@ export default function DoctorDashboard() {
     return true;
   });
 
-  // Generar Link y Enviar SMS
+  // Generar Link (Modificado para no depender de Jasmin y usar compartir manual)
   const handleGenerateLink = async () => {
-    // El teléfono es obligatorio para el flujo de SMS
     if (!targetPhone) return;
 
     try {
+      // Usamos tu endpoint existente. Si devuelve el link, lo mostramos.
       const res = await fetch('/api/doctor/invite', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nih: targetNih, phone: targetPhone })
       });
       const data = await res.json();
+
       if (data.success) {
         setGeneratedLink(data.link);
-        if (data.smsStatus === 'sent') alert("SMS enviado correctamente vía Twilio.");
-        else if (data.smsStatus === 'simulated') alert("SMS Simulado (ver consola del servidor). Configura Twilio en .env para envío real.");
-        else if (data.smsStatus === 'failed') alert("Error enviando SMS vía Twilio. Verifica tus claves.");
+        // Eliminamos los alerts intrusivos para usar la UI del modal
+      } else {
+        alert(data.error || "Error al generar invitación");
       }
-    } catch (e) { alert("Error generando invitación"); }
+    } catch (e) { alert("Error de conexión"); }
+  };
+
+  // Funciones de compartir
+  const shareWhatsApp = () => {
+    const message = `Hola, le invitamos a realizar su evaluación de salud en Alcolens: ${generatedLink}`;
+    const url = `https://wa.me/${targetPhone.replace(/\s+/g, '').replace('+', '')}?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(generatedLink);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
   // Helper Badge
@@ -121,13 +140,8 @@ export default function DoctorDashboard() {
     );
   };
 
-  // Traducción de filtros
   const filterLabels: Record<string, string> = {
-    'all': 'Todos',
-    'high': 'Alto Riesgo',
-    'ambar': 'Riesgo Medio',
-    'low': 'Riesgo Bajo',
-    'cero': 'Sin Riesgo'
+    'all': 'Todos', 'high': 'Alto Riesgo', 'ambar': 'Riesgo Medio', 'low': 'Riesgo Bajo', 'cero': 'Sin Riesgo'
   };
 
   return (
@@ -161,42 +175,45 @@ export default function DoctorDashboard() {
                   <span>Invitar Paciente</span>
                 </LiquidButton>
               </DialogTrigger>
+
+              {/* MODAL CON TUS ESTILOS */}
               <DialogContent className="bg-secondary p-0 overflow-hidden sm:max-w-md rounded-2xl border border-slate-100 shadow-2xl">
                 <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                   <DialogHeader className="flex flex-row items-center gap-3 space-y-0 text-left">
-                    <div className="p-2 bg-primary/40 rounded-lg text-secondary">
+                    <div className="p-2 bg-primary rounded-lg text-secondary">
                       <MessageSquare className="w-5 h-5" />
                     </div>
-                    <DialogTitle className="font-bold text-lg text-slate-800">
+                    <DialogTitle className="font-bold text-lg text-black ">
                       Invitar Paciente
                     </DialogTitle>
                   </DialogHeader>
                 </div>
+
                 <div className="p-6 space-y-5">
                   {!generatedLink ? (
+                    /* FASE 1: FORMULARIO (Tus estilos originales) */
                     <>
                       <div className="space-y-4">
                         <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">ID del Paciente (NIH)</label>
+                          <label className="block text-sm font-bold text-black mb-2">ID del Paciente (NIH)</label>
                           <input
                             type="text"
-                            placeholder="Ej: 12345678"
-                            className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-slate-300 font-medium uppercase"
+                            placeholder="12345678"
+                            className="w-full px-4 py-3 bg-white border text-sm border-slate-200 rounded-xl focus:ring-2 focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium uppercase"
                             value={targetNih}
                             onChange={e => setTargetNih(e.target.value)}
                           />
-                          <p className="text-xs text-slate-400 mt-2 ml-1">Opcional. Si se deja vacío, será anónimo.</p>
+                          <p className="text-xs text-black/50 mt-2 ml-1">Opcional. Si se deja vacío, será anónimo.</p>
                         </div>
 
                         <div>
-                          <label className="block text-sm font-bold text-slate-700 mb-2">Teléfono (para SMS)</label>
+                          <label className="block text-sm font-bold text-black mb-2">Teléfono (para SMS)</label>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm pointer-events-none">+34</span>
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-background font-mono text-black/80 text-sm pointer-events-none">+34</span>
                             <input
                               type="tel"
                               placeholder="555 777 888"
-                              onInput={(e) => { e.currentTarget.value = e.currentTarget.value.replace(/[^0-9\s]/g, '').slice(0, 9); }}
-                              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-slate-300 font-medium"
+                              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 text-sm focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium"
                               value={targetPhone}
                               onChange={e => setTargetPhone(e.target.value)}
                             />
@@ -205,11 +222,11 @@ export default function DoctorDashboard() {
                       </div>
 
                       <div className="flex gap-3 pt-2">
-                        <button onClick={() => setShowSmsModal(false)} className="flex-1 py-3 text-slate-500 font-bold hover:bg-slate-50 rounded-xl transition-colors">Cancelar</button>
+                        <button onClick={() => setShowSmsModal(false)} className="flex-1 py-3 text-slate-500 font-bold rounded-xl transition-colors">Cancelar</button>
                         <button
                           onClick={handleGenerateLink}
                           disabled={!targetPhone}
-                          className="flex-[2] py-3 bg-primary text-secondary font-bold rounded-xl hover:bg-[#b03030] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-red-200 transition-all flex items-center justify-center gap-2"
+                          className="flex-[2] py-3 bg-primary text-secondary hover:bg-primary/80 font-bold rounded-xl  disabled:cursor-not-allowed shadow-lg shadow-red-200 transition-all flex items-center justify-center gap-2"
                         >
                           <span>Generar Enlace</span>
                           <ArrowUpRight className="w-4 h-4" />
@@ -217,26 +234,44 @@ export default function DoctorDashboard() {
                       </div>
                     </>
                   ) : (
+                    /* FASE 2: COMPARTIR (Integrada con tus estilos) */
                     <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
+
+                      {/* Caja de Link Generado */}
                       <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
                         <p className="text-emerald-800 font-bold mb-1">¡Invitación Creada!</p>
                         <p className="text-xs text-emerald-600/80 break-all font-mono bg-white/60 p-2 rounded border border-emerald-100/50">{generatedLink}</p>
                       </div>
 
+                      {/* Botones de Acción */}
+                      <div className="grid grid-cols-1 gap-3">
 
-                      <button onClick={() => setGeneratedLink('')} className="w-full py-2 text-slate-400 text-sm font-medium hover:text-background transition-colors">
-                        Generar otra invitación
-                      </button>
+                        {/* WhatsApp (Color de marca oficial, excepción permitida) */}
+                        <button
+                          onClick={shareWhatsApp}
+                          className="w-full py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2 shadow-sm"
+                        >
+                          <Smartphone className="w-5 h-5" />
+                          <span>Enviar por WhatsApp</span>
+                        </button>
 
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(generatedLink);
-                          alert("Enlace copiado al portapapeles");
-                        }}
-                        className="w-full py-2 text-primary text-sm font-bold hover:underline transition-colors"
-                      >
-                        Copiar Enlace Manualmente
-                      </button>
+                        <div className="flex gap-3">
+                          <button
+                            onClick={copyToClipboard}
+                            className="flex-1 py-3 bg-white border-2 border-primary text-primary rounded-xl font-bold hover:bg-red-50 transition-colors flex items-center justify-center gap-2"
+                          >
+                            {isCopied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                            <span>{isCopied ? 'Copiado' : 'Copiar'}</span>
+                          </button>
+
+                          <button
+                            onClick={() => setGeneratedLink('')}
+                            className="flex-1 py-3 text-black text-sm font-medium hover:text-black/80 transition-colors border border-black hover:border-slate-200 rounded-xl"
+                          >
+                            Nueva
+                          </button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -245,7 +280,7 @@ export default function DoctorDashboard() {
           </div>
         </div>
 
-        {/* KPI CARDS */}
+        {/* KPI CARDS (Sin cambios, tus estilos) */}
         <div className={`${primaryFontBold.className} grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4`}>
           <KPICard title="Total Evaluados" value={stats.total} icon={Users} trend="+12% vs mes pasado" />
           <KPICard title="Riesgo Elevado" value={stats.highRiskCount} icon={AlertOctagon} isWarning trend="Requieren atención" />
@@ -253,9 +288,7 @@ export default function DoctorDashboard() {
           <KPICard title="Score Medio" value={stats.avgScore} icon={TrendingUp} trend="Estable" />
         </div>
 
-        {/* CHARTS SECTION */}
         <div className={`${primaryFontBold.className} grid lg:grid-cols-3 gap-6`}>
-          {/* Pie Chart */}
           <div className="lg:col-span-1 bg-card p-6 rounded-3xl shadow-xl shadow-primary/5 border border-border flex flex-col">
             <h3 className={`${primaryFontBold.className} text-primary mb-6`}>Distribución de Riesgo</h3>
             <div className="flex-1 min-h-[250px]">

@@ -1,53 +1,51 @@
 import { NextRequest, NextResponse } from 'next/server';
-import twilio from 'twilio';
+import Link from 'next/link';
+import { callBackUrl } from '@/app/lib/utils/urls';
 
 export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { nih, phone } = body;
-
-        // 1. Generate Link
-        const origin = req.headers.get('origin') || 'http://localhost:3000';
-        const link = nih
-            ? `${origin}/patient/audit?id=${nih}`
-            : `${origin}/patient/audit`;
-
-        // 2. Send SMS (if phone provided)
-        let smsStatus = 'skipped';
+        const link = `https://alcolens.vercel.app/patient/audit?id=${nih}`;
 
         if (phone) {
-            const accountSid = process.env.TWILIO_ACCOUNT_SID;
-            const authToken = process.env.TWILIO_AUTH_TOKEN;
-            const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+            try {
+                const jasminURL = process.env.NEXT_PUBLIC_JASMINURL;
+                const jasminUser = process.env.NEXT_PUBLIC_JASMINUSER;
+                const jasminPassword = process.env.NEXT_PUBLIC_JASMINPASSWORD;
+                const jasminFrom = process.env.NEXT_PUBLIC_JASMINFROM;
+                const JasminAuth = Buffer.from(`${jasminUser}:${jasminPassword}`).toString('base64');
+                const JasminHeaders = {
+                    'Authorization': `Basic ${JasminAuth}`,
+                    'Content-Type': 'application/json'
+                };
+                const JasminBody = {
+                    'to': phone.startsWith('+') ? phone : `+34${phone.replace(/\s/g, '')}`,
+                    'from': jasminFrom,
+                    'content': `Hola, le invitamos a realizar su evaluación de salud en Alcolens: ${link}`,
+                    'drl': "yes",
+                    'drl-url': callBackUrl,
+                    'drl-level': 3
+                };
 
-            if (accountSid && authToken && fromNumber) {
-                // Real Twilio Sending
-                try {
-                    const client = twilio(accountSid, authToken);
-                    await client.messages.create({
-                        body: `Hola, le invitamos a realizar su evaluación de salud en Alcolens: ${link}`,
-                        from: fromNumber,
-                        to: phone.startsWith('+') ? phone : `+34${phone.replace(/\s/g, '')}` // Ensure E.164 format (assuming Spain +34 if missing)
-                    });
-                    smsStatus = 'sent';
-                    console.log(`[Twilio] SMS sent to ${phone}`);
-                } catch (twilioError) {
-                    console.error('[Twilio] Error sending SMS:', twilioError);
-                    smsStatus = 'failed';
+                const JasminResponse = await fetch(`${jasminURL}/messages`, {
+                    method: 'POST',
+                    headers: JasminHeaders,
+                    body: JSON.stringify(JasminBody)
+                });
+
+                if (JasminResponse.ok) {
+                    return NextResponse.json({ success: true, link, smsStatus: 'sent' }, { status: 200 });
+                } else {
+                    return NextResponse.json({ success: true, link, smsStatus: 'failed' }, { status: 200 });
                 }
-            } else {
-                // Simulation Mode
-                console.log('================================================');
-                console.log('[SMS SIMULATION] Keys not found in .env');
-                console.log(`To: ${phone}`);
-                console.log(`Message: Hola, le invitamos a realizar su evaluación de salud en Alcolens: ${link}`);
-                console.log('================================================');
-                smsStatus = 'simulated';
+            } catch (error) {
+                console.error('Error sending SMS:', error);
+                return NextResponse.json({ success: true, link, smsStatus: 'failed' }, { status: 200 });
             }
+        } else {
+            return NextResponse.json({ error: 'Número de teléfono requerido' }, { status: 400 });
         }
-
-        return NextResponse.json({ success: true, link, smsStatus }, { status: 200 });
-
     } catch (error) {
         console.error('Error generating invite:', error);
         return NextResponse.json(
