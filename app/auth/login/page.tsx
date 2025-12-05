@@ -29,7 +29,7 @@ export default function LoginPage() {
       });
 
       if (result?.ok) {
-        router.push('/');
+        router.push('/doctor');
         router.refresh();
       } else {
         setError('Credenciales no válidas. Verifique sus datos.');

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Users,
   MessageSquare,
@@ -15,12 +15,14 @@ import {
   Copy, // Importamos icono para copiar
   Check // Importamos icono para feedback visual
 } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 // Tus rutas de fuentes originales
 import { primaryFontBold, primaryFontRegular } from '@/app/lib/utils/fonts';
 // Tus componentes originales
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from '@/components/animate-ui/components/radix/dialog';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import LiquidButton from '@/app/lib/utils/button-liquids';
+import QRCodeUtil from 'qrcode';
 
 // Interfaces
 interface PatientResult {
@@ -32,17 +34,67 @@ interface PatientResult {
   createdAt: string;
 }
 
+
+const QRCode = ({ value }: { value: string }) => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    if (canvasRef.current) {
+      QRCodeUtil.toCanvas(canvasRef.current, value, {
+        width: 240,
+        margin: 1,
+        color: {
+          dark: '#334155', // Slate-700
+          light: '#ffffff',
+        },
+      }, (error) => {
+        if (error) console.error(error);
+      });
+    }
+  }, [value]);
+
+  return (
+    <div className="relative group mx-auto w-fit">
+      <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-red-600 rounded-3xl opacity-75 group-hover:opacity-100 transition duration-1000 group-hover:duration-200 blur"></div>
+      <div className="relative bg-white p-4 rounded-3xl shadow-xl flex flex-col items-center gap-2">
+        <canvas ref={canvasRef} className="rounded-xl" />
+        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Escanear</p>
+      </div>
+    </div>
+  );
+};
+
 export default function DoctorDashboard() {
+  const { data: session } = useSession();
   const [results, setResults] = useState<PatientResult[]>([]);
   const [loading, setLoading] = useState(true);
   const [riskFilter, setRiskFilter] = useState<'all' | 'high' | 'low' | 'ambar' | 'cero'>('all');
 
-  const [showSmsModal, setShowSmsModal] = useState(false);
+  const [targetName, setTargetName] = useState('');
+  const [showModal, setShowModal] = useState(false);
   const [targetPhone, setTargetPhone] = useState('');
   const [targetNih, setTargetNih] = useState('');
+  const [targetEmail, setTargetEmail] = useState('');
+  const [targetId, setTargetId] = useState('');
   const [generatedLink, setGeneratedLink] = useState('');
   // Estado para feedback visual al copiar
   const [isCopied, setIsCopied] = useState(false);
+  const [qrRef, setQrRef] = useState<HTMLCanvasElement | null>(null);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const generateQR = async () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL;
+    const id = targetNih || Math.random().toString(36).substring(2, 10).toUpperCase();
+    const link = `${baseUrl}/patient/audit?id=${id}`;
+    setGeneratedLink(link);
+    setTargetId(id);
+    return id;
+  };
+
+  useEffect(() => {
+    generateQR();
+  }, []);
 
   // Fetch Data
   const fetchResults = async () => {
@@ -60,16 +112,17 @@ export default function DoctorDashboard() {
 
   useEffect(() => { fetchResults(); }, []);
 
+
   // KPIs Calculados
   const stats = useMemo(() => {
     const total = results.length;
-    const highRiskCount = results.filter(r => ['red', 'amber'].includes(r.levelResult)).length;
+    const highRiskCount = results.filter(r => ['red', 'ambar', 'amber'].includes(r.levelResult)).length;
     const today = results.filter(r => new Date(r.createdAt).toDateString() === new Date().toDateString()).length;
     const avgScore = total > 0 ? (results.reduce((acc, curr) => acc + curr.totalScore, 0) / total).toFixed(1) : 0;
 
     const riskData = [
       { name: 'Alto Riesgo', value: results.filter(r => r.levelResult === 'red').length, color: '#f43f5e' },
-      { name: 'Riesgo Medio', value: results.filter(r => r.levelResult === 'amber').length, color: '#fb923c' },
+      { name: 'Riesgo Medio', value: results.filter(r => ['ambar', 'amber'].includes(r.levelResult)).length, color: '#fb923c' },
       { name: 'Bajo Riesgo', value: results.filter(r => r.levelResult === 'yellow').length, color: '#fcd34d' },
       { name: 'Sin Riesgo', value: results.filter(r => r.levelResult === 'green').length, color: '#34d399' },
     ].filter(item => item.value > 0);
@@ -81,33 +134,12 @@ export default function DoctorDashboard() {
   const filteredResults = results.filter(r => {
     if (riskFilter === 'all') return true;
     if (riskFilter === 'high') return ['red'].includes(r.levelResult);
-    if (riskFilter === 'ambar') return ['amber'].includes(r.levelResult);
+    if (riskFilter === 'ambar') return ['ambar', 'amber'].includes(r.levelResult);
     if (riskFilter === 'low') return ['yellow'].includes(r.levelResult);
     if (riskFilter === 'cero') return ['green'].includes(r.levelResult);
     return true;
   });
 
-  // Generar Link (Modificado para no depender de Jasmin y usar compartir manual)
-  const handleGenerateLink = async () => {
-    if (!targetPhone) return;
-
-    try {
-      // Usamos tu endpoint existente. Si devuelve el link, lo mostramos.
-      const res = await fetch('/api/doctor/invite', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nih: targetNih, phone: targetPhone })
-      });
-      const data = await res.json();
-
-      if (data.success) {
-        setGeneratedLink(data.link);
-        // Eliminamos los alerts intrusivos para usar la UI del modal
-      } else {
-        alert(data.error || "Error al generar invitación");
-      }
-    } catch (e) { alert("Error de conexión"); }
-  };
 
   // Funciones de compartir
   const shareWhatsApp = () => {
@@ -122,16 +154,46 @@ export default function DoctorDashboard() {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const handleGenerateLink = () => {
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_APP_URL;
+    const id = targetNih || Math.random().toString(36).substring(2, 10).toUpperCase();
+    const link = `${baseUrl}/patient/audit?id=${id}`;
+    setGeneratedLink(link);
+    setTargetId(id);
+    return id;
+  };
+
+
+  const handleSendEmail = async (id?: string) => {
+    if (!targetEmail) return;
+    const idToSend = id || targetId;
+
+    try {
+      const res = await fetch('/api/doctor/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ doctorName: targetName, email: targetEmail, id: idToSend })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Invitación enviada correctamente');
+      } else {
+        alert(data.error || "Error al enviar la invitación");
+      }
+    } catch (e) { alert("Error de conexión"); }
+  };
+
   // Helper Badge
   const RiskBadge = ({ level }: { level: string }) => {
     const styles: Record<string, string> = {
       'green': 'bg-emerald-100 text-emerald-700 border-emerald-200',
-      'yellow': 'bg-amber-100 text-amber-700 border-amber-200',
+      'yellow': 'bg-yellow-100 text-yellow-700 border-yellow-200',
+      'ambar': 'bg-orange-100 text-orange-700 border-orange-200',
       'amber': 'bg-orange-100 text-orange-700 border-orange-200',
       'red': 'bg-rose-100 text-rose-700 border-rose-200',
     };
     const labels: Record<string, string> = {
-      'green': 'Cero Riesgo', 'yellow': 'Bajo Riesgo', 'amber': 'Riesgo Medio', 'red': 'Alto Riesgo'
+      'green': 'Cero Riesgo', 'yellow': 'Bajo Riesgo', 'ambar': 'Riesgo Medio', 'amber': 'Riesgo Medio', 'red': 'Alto Riesgo'
     };
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${styles[level] || styles.green}`}>
@@ -165,10 +227,12 @@ export default function DoctorDashboard() {
               <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
             </button>
 
-            <Dialog open={showSmsModal} onOpenChange={setShowSmsModal}>
+            <Dialog open={showModal} onOpenChange={setShowModal}>
               <DialogTrigger asChild>
                 <LiquidButton
-                  onClick={() => { setGeneratedLink(''); setTargetPhone(''); setTargetNih(''); }}
+                  onClick={() => {
+                    setGeneratedLink(''); setTargetEmail(''); setTargetName(session?.user?.name || ''); setTargetId('');
+                  }}
                   className="flex items-center gap-2 px-6 py-3 bg-card shadow-2xl border text-primary font-bold rounded-xl shadow-lg shadow-black/10 transition-all hover:scale-105 hover:shadow-xl"
                 >
                   <MessageSquare className="w-5 h-5" />
@@ -199,7 +263,7 @@ export default function DoctorDashboard() {
                           <input
                             type="text"
                             placeholder="12345678"
-                            className="w-full px-4 py-3 bg-white border text-sm border-slate-200 rounded-xl focus:ring-2 focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium uppercase"
+                            className="w-full px-4 py-3 bg-white border text-black text-sm border-slate-200 rounded-xl focus:ring-2 focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium uppercase"
                             value={targetNih}
                             onChange={e => setTargetNih(e.target.value)}
                           />
@@ -209,23 +273,35 @@ export default function DoctorDashboard() {
                         <div>
                           <label className="block text-sm font-bold text-black mb-2">Teléfono (para SMS)</label>
                           <div className="relative">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-background font-mono text-black/80 text-sm pointer-events-none">+34</span>
                             <input
                               type="tel"
-                              placeholder="555 777 888"
-                              className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 text-sm focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium"
+                              placeholder="666666666"
+                              className="w-full px-4 text-black py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 text-sm focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium"
                               value={targetPhone}
                               onChange={e => setTargetPhone(e.target.value)}
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-bold text-black mb-2">Correo Electrónico (para Email)</label>
+                          <div className="relative">
+                            <input
+                              type="email"
+                              placeholder="alcolenscontact@gmail.com"
+                              className="w-full px-4 text-black py-3 bg-white border border-slate-200 rounded-xl focus:ring-2 text-sm focus:ring-background/20 focus:border-background outline-none transition-all font-mono text-lg placeholder:text-black/40 font-medium"
+                              value={targetEmail}
+                              onChange={e => setTargetEmail(e.target.value)}
                             />
                           </div>
                         </div>
                       </div>
 
                       <div className="flex gap-3 pt-2">
-                        <button onClick={() => setShowSmsModal(false)} className="flex-1 py-3 text-slate-500 font-bold rounded-xl transition-colors">Cancelar</button>
+                        <button onClick={() => setShowModal(false)} className="flex-1 py-3 text-slate-500 font-bold rounded-xl transition-colors">Cancelar</button>
                         <button
-                          onClick={handleGenerateLink}
-                          disabled={!targetPhone}
+                          onClick={() => { const id = handleGenerateLink(); handleSendEmail(id); }}
+                          disabled={!targetPhone && !targetEmail}
                           className="flex-[2] py-3 bg-primary text-secondary hover:bg-primary/80 font-bold rounded-xl  disabled:cursor-not-allowed shadow-lg shadow-red-200 transition-all flex items-center justify-center gap-2"
                         >
                           <span>Generar Enlace</span>
@@ -236,24 +312,33 @@ export default function DoctorDashboard() {
                   ) : (
                     /* FASE 2: COMPARTIR (Integrada con tus estilos) */
                     <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
-
-                      {/* Caja de Link Generado */}
-                      <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl text-center">
-                        <p className="text-emerald-800 font-bold mb-1">¡Invitación Creada!</p>
-                        <p className="text-xs text-emerald-600/80 break-all font-mono bg-white/60 p-2 rounded border border-emerald-100/50">{generatedLink}</p>
+                      <QRCode value={generatedLink} />
+                      <div className="p-4 bg-red-50 border border-red-100 rounded-xl text-center">
+                        <p className="text-red-800 font-bold mb-1">¡Invitación Creada!</p>
+                        <p className="text-xs text-red-600/80 break-all font-mono bg-white/60 p-2 rounded border border-red-100/50">{generatedLink}</p>
                       </div>
 
-                      {/* Botones de Acción */}
-                      <div className="grid grid-cols-1 gap-3">
 
-                        {/* WhatsApp (Color de marca oficial, excepción permitida) */}
-                        <button
-                          onClick={shareWhatsApp}
-                          className="w-full py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2 shadow-sm"
-                        >
-                          <Smartphone className="w-5 h-5" />
-                          <span>Enviar por WhatsApp</span>
-                        </button>
+                      {targetEmail && (
+                        <div className="p-4 bg-red-500 border border-red-100 rounded-xl text-center">
+                          <p className="text-white font-bold mb-1">¡Email Enviado!</p>
+                        </div>
+                      )}
+
+
+                      <div className="grid grid-cols-1 gap-3">
+                        {targetPhone && (
+                          <>
+                            {/* WhatsApp (Color de marca oficial, excepción permitida) */}
+                            <button
+                              onClick={shareWhatsApp}
+                              className="w-full py-3 bg-[#25D366] text-white font-bold rounded-xl hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2 shadow-sm"
+                            >
+                              <Smartphone className="w-5 h-5" />
+                              <span>Enviar por WhatsApp</span>
+                            </button>
+                          </>
+                        )}
 
                         <div className="flex gap-3">
                           <button

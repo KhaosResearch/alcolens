@@ -6,33 +6,34 @@ export interface IResponse extends Document {
   sex: 'man' | 'woman';
   studyLevel: string;
   // Usamos Map o Record para definir que es un objeto { "q1": 0, "q2": 1 }
-  answers: Map<string, number>; 
+  answers: Map<string, number>;
   totalScore: number;
   levelResult: string;
+  consent: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
 
 const responseSchema = new mongoose.Schema<IResponse>(
   {
-    patientId: { 
-      type: String, 
+    patientId: {
+      type: String,
       required: true,
       index: true
     },
-    sex: { 
+    sex: {
       type: String,
       required: true,
-      enum: ['man', 'woman'] 
+      enum: ['man', 'woman']
     },
-    studyLevel: { 
+    studyLevel: {
       type: String,
       required: true
     },
-    answers: { 
+    answers: {
       type: Map,
-      of: Number, 
-      required: true 
+      of: Number,
+      required: true
     },
     totalScore: {
       type: Number,
@@ -41,8 +42,12 @@ const responseSchema = new mongoose.Schema<IResponse>(
     levelResult: {
       type: String,
       required: true
+    },
+    consent: {
+      type: Boolean,
+      required: true
     }
-  }, 
+  },
   { timestamps: true }
 );
 

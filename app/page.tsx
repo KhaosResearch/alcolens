@@ -36,7 +36,7 @@ export default function LandingPage() {
         </h1>
 
         <p className="text-lg sm:text-xl text-foreground max-w-2xl mb-10 leading-relaxed animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-          AlcoLens Pro ofrece herramientas avanzadas para profesionales de la salud.
+          AlcoLens ofrece herramientas avanzadas para profesionales de la salud.
           Gestión de pacientes, evaluaciones AUDIT-C y seguimiento en tiempo real.
         </p>
 

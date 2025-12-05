@@ -13,17 +13,12 @@ services:
       - .env
     environment:
       - NODE_ENV=development
-      - MONGODB_URI=mongodb://mongo:27017/alcolens
-      - JASMIN_URL=http://jasmin:8080/secure/send
+      - MONGODB_URI=mongodb+srv://Vercel-Admin-alcolens:JWBjPyArNJRfnglm@alcolens.qcsbyyp.mongodb.net/test?retryWrites=true&w=majority
     volumes:
       - .:/app
-      - /app/node_modules
-      - /app/.next
     command: pnpm dev
     depends_on:
-      - jasmin
       - mongo
-
   # 2. MONGODB
   mongo:
     container_name: alcolens_mongo
@@ -31,81 +26,9 @@ services:
     restart: always
     ports:
       - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
     env_file:
       - .env
-
-  # 3. REDIS (Configuración Jasmin)
-  redis:
-    container_name: alcolens_redis
-    image: redis:alpine
-    restart: unless-stopped
-    healthcheck:
-      test: redis-cli ping | grep PONG
-    deploy:
-      resources:
-        limits:
-          cpus: '0.2'
-          memory: 128M
-    security_opt:
-      - no-new-privileges:true
-
-  # 4. RABBITMQ (Configuración Jasmin)
-  rabbit-mq:
-    container_name: alcolens_rabbitmq
-    image: rabbitmq:3.10-management-alpine
-    restart: unless-stopped
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 525M
-    security_opt:
-      - no-new-privileges:true
-
-  # 5. JASMIN SMS GATEWAY (Configuración Original)
-  jasmin:
-    container_name: alcolens_jasmin
-    image: jookies/jasmin:latest
-    restart: unless-stopped
-    ports:
-      - "2775:2775"
-      - "8990:8990"
-      - "1401:1401"
-    depends_on:
-      redis:
-        condition: service_healthy
-      rabbit-mq:
-        condition: service_healthy
-    environment:
-      REDIS_CLIENT_HOST: redis
-      AMQP_BROKER_HOST: rabbit-mq
-    deploy:
-      resources:
-        limits:
-          cpus: '1'
-          memory: 256M
-    security_opt:
-      - no-new-privileges:true
-    volumes:
-      - jasmin_logs:/var/log/jasmin
-
-  # 6. CONFIGURADOR AUTOMÁTICO
-  jasmin-config:
-    image: alpine:latest # Corregido typo 'alpine-latest'
-    container_name: alcolens_jasmin_config
-    depends_on:
-      - jasmin
-    volumes:
-      - ./scripts/init_jasmin.sh:/init_jasmin.sh
-    command: >
-      sh -c "apk add --no-cache netcat-openbsd && chmod +x /init_jasmin.sh && /init_jasmin.sh"
 
 # Volúmenes Persistentes
 volumes:
   mongo_data:
-  jasmin_logs:
-  jasmin_data:

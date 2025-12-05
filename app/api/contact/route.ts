@@ -13,10 +13,9 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Configuración del Transporter SMTP
-        // NOTA: El usuario debe configurar estas variables en .env
+     
         const transporter = nodemailer.createTransport({
-            service: 'gmail', // O 'smtp.office365.com', etc.
+            service: 'gmail', 
             auth: {
                 user: process.env.EMAIL_USER,
                 pass: process.env.EMAIL_PASS,

@@ -5,11 +5,13 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  specialization?: string; 
+  specialization?: string;
   medicalLicense?: string;
   role?: string;
   createdAt: Date;
   updatedAt: Date;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: Date;
   comparePassword(password: string): Promise<boolean>;
 }
 
@@ -48,6 +50,14 @@ const userSchema = new Schema<IUser>(
     medicalLicense: {
       type: String,
       default: null,
+    },
+    resetPasswordToken: {
+      type: String,
+      default: undefined,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: undefined,
     }
   },
   {
