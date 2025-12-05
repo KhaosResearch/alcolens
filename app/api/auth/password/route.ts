@@ -38,7 +38,7 @@ export async function POST(request: Request) {
         await user.save();
 
         // Send email
-        const resetUrl = `${process.env.NEXTAUTH_URL}/auth/login/password/${resetToken}`;
+        const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/auth/login/password/reset?resetToken=${resetToken}`;
 
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -49,10 +49,43 @@ export async function POST(request: Request) {
         });
 
         const message = `
-            <h1>Has solicitado restablecer tu contraseña</h1>
-            <p>Por favor, ve a este enlace para restablecer tu contraseña:</p>
-            <a href="${resetUrl}" clicktracking=off>${resetUrl}</a>
-            <p>Este enlace expirará en 1 hora.</p>
+        <div style="background-color: #f8fafc; padding: 40px 0; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+            
+            <!-- Cabecera Roja -->
+            <div style="background-color: #CD4242; padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: -0.5px;">AlcoLens</h1>
+            </div>
+
+            <!-- Contenido -->
+            <div style="padding: 40px 30px; color: #334155;">
+            <h2 style="color: #1e293b; font-size: 20px; margin-top: 0;">Restablecimiento de Contraseña</h2>
+            
+            <p style="line-height: 1.6; font-size: 16px;">Por favor, haz clic en el botón de abajo para restablecer tu contraseña :</p>
+
+             <!-- Botón CTA -->
+            <div style="text-align: center; margin-top: 35px;">
+                <a href="${resetUrl}" style="background-color: #CD4242; color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 50px; font-weight: bold; font-size: 16px; display: inline-block; box-shadow: 0 4px 10px rgba(205, 66, 66, 0.3);">
+                Restablecer Contraseña
+                </a>
+            </div>
+
+             <p style="margin-top: 40px; font-size: 13px; color: #94a3b8; text-align: center;">
+                Si el botón no funciona, copie y pegue este enlace en su navegador: <br>
+                <a href="${resetUrl}" style="color: #CD4242;">${resetUrl}</a>
+            </p>
+
+        </div>
+
+        <!--Footer -->
+            <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-top: 1px solid #e2e8f0;">
+                <p style="font-size: 12px; color: #64748b; margin: 0;">
+                © 2025 Servicio Médico AlcoLens.Todos los derechos reservados.<br>
+                Este es un mensaje automático, por favor no responda a este correo.
+            </p>
+        </div>
+        </div>
+        </div>
         `;
 
         try {

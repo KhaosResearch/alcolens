@@ -14,9 +14,6 @@ const TWILIO_FROM = process.env.TWILIO_FROM;
 async function sendSms(to: string, body: string) {
   if (!TWILIO_SID || !TWILIO_TOKEN || !TWILIO_FROM) return false;
   try {
-    // Para usar Twilio, instala el paquete: npm i twilio
-    // Si no está instalado, esta función devuelve false
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const twilio = require('twilio');
     if (!twilio) return false;
     const client = twilio(TWILIO_SID, TWILIO_TOKEN);

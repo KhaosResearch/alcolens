@@ -14,19 +14,37 @@ export const authConfig = {
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
+        console.log("🔐 Authorize called with:", credentials?.email);
         // 1) validar entrada
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) {
+          console.log("❌ Missing credentials");
+          return null;
+        }
 
         // 2) conectar DB (usa tu util connectDB)
-        await connectDB();
+        try {
+          await connectDB();
+          console.log("✅ DB Connected");
+        } catch (e) {
+          console.error("❌ DB Connection failed:", e);
+          return null;
+        }
 
         // 3) buscar usuario
         const user = await User.findOne({ email: credentials.email }).select('+password');
-        if (!user) return null;
+        if (!user) {
+          console.log("❌ User not found:", credentials.email);
+          return null;
+        }
+        console.log("✅ User found:", user.email, "Role:", (user as any).role);
 
         // 4) comparar contraseña (user.comparePassword debería existir)
         const match = await (user as any).comparePassword(credentials.password);
-        if (!match) return null;
+        if (!match) {
+          console.log("❌ Password mismatch");
+          return null;
+        }
+        console.log("✅ Password match");
 
         // 5) devolver objeto de usuario público que NextAuth almacenará en el token
         return {

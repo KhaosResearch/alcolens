@@ -1,32 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectDB } from '@/app/lib/db';
 import ResponseModel from '@/app/lib/models/Response'; // Asegúrate que la ruta al modelo nuevo es correcta
-// import crypto from 'crypto';                 <-- Lo usaremos en el Sprint de Seguridad
-// import InviteToken from '@/app/lib/models/InviteToken';
+import { getServerSession } from 'next-auth';
+import { authConfig } from '@/app/lib/auth.config';
 
 export async function POST(req: NextRequest) {
   try {
     // 1. Conexión a Base de Datos (Esperamos a que conecte 🛑)
     await connectDB();
-    
+
     // 2. Leemos los datos que llegan del Frontend
     const body = await req.json();
-    
+    const session = await getServerSession(authConfig);
+    if (!session || (session.user as any).role !== 'doctor') {
+      return NextResponse.json(
+        { error: 'Solo los médicos pueden guardar resultados' },
+        { status: 404 }
+      );
+    }
     // Desestructuramos los datos NUEVOS que definiste en tu modelo
-    const { 
-      patientId, 
-      sex, 
-      studyLevel, 
-      answers, 
-      totalScore, 
+    const {
+      patientId,
+      sex,
+      studyLevel,
+      answers,
+      totalScore,
       levelResult,
+      consent, // Nuevo campo
       token // Opcional por ahora
     } = body;
 
     // 3. VALIDACIÓN DE DATOS (Protección básica)
-    if (!patientId || !answers || !sex || !studyLevel) {
+    if (!patientId || !answers || !sex || !studyLevel || consent === undefined) {
       return NextResponse.json(
-        { error: 'Faltan campos obligatorios (patientId, sex, studyLevel o answers)' }, 
+        { error: 'Faltan campos obligatorios (patientId, sex, studyLevel, answers o consent)' },
         { status: 400 }
       );
     }
@@ -59,15 +66,16 @@ export async function POST(req: NextRequest) {
       answers,      // Mongoose convertirá automáticamente el objeto JSON a Map
       totalScore,
       levelResult,
+      consent,
       // Si quisieras guardar fecha manual: createdAt: new Date() (pero timestamps: true ya lo hace)
     });
 
     console.log(`✅ Resultado guardado. ID: ${savedResponse._id} | Riesgo: ${levelResult}`);
 
     // 5. Respuesta al cliente
-    return NextResponse.json({ 
-      success: true, 
-      responseId: savedResponse._id.toString() 
+    return NextResponse.json({
+      success: true,
+      responseId: savedResponse._id.toString()
     }, { status: 201 });
 
   } catch (error) {

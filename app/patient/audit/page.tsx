@@ -9,9 +9,11 @@ import LiquidButton from '@/app/lib/utils/button-liquids';
 import { AuditStep, OptionCard } from './components/audit-step';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/app/lib/utils';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Download, CheckCircle2 } from 'lucide-react';
+import { jsPDF } from 'jspdf';
 
-type Fase = 'estudios' | 'sexo' | 'test' | 'resultados';
+
+type Fase = 'estudios' | 'sexo' | 'test' | 'consentimiento' | 'resultados';
 
 function AuditLoading() {
   return (
@@ -40,6 +42,7 @@ function AuditContent() {
 
   const [test, setTest] = useState(0);
   const [resultados, setResultados] = useState<Record<string, number>>({});
+  const [consent, setConsent] = useState(false);
 
   useEffect(() => {
     const idInvitation = searchParams.get('id');
@@ -57,7 +60,7 @@ function AuditContent() {
     const score = calculateAuditScore(resultados);
     const risk = riskEvaluation(score, sexo).riskLevel;
 
-    await saveAuditResult(patientId, score, risk, resultados, sexo, estudios);
+    await saveAuditResult(patientId, score, risk, resultados, sexo, estudios, consent);
 
     setIsSaving(false);
     setDataSaved(true);
@@ -143,7 +146,7 @@ function AuditContent() {
                       setTimeout(() => setTest(test + 1), 250); // Pequeño delay para feedback visual
                     } else {
                       // Trigger save logic
-                      setTimeout(handleFinish, 250);
+                      setTimeout(() => setFase('consentimiento'), 250);
                     }
                   }}
                 />
@@ -161,9 +164,98 @@ function AuditContent() {
             </div>
           </AuditStep>
         );
+      case 'consentimiento':
+        return (
+          <AuditStep
+            title="Consentimiento de Datos"
+            description="Para guardar sus resultados y generar su informe, necesitamos su consentimiento."
+            onNext={handleFinish}
+            canNext={consent}
+            nextLabel="Finalizar y Ver Resultados"
+          >
+            <div className="bg-muted/30 p-6 rounded-xl border border-border space-y-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-1">
+                  <input
+                    type="checkbox"
+                    id="consent-check"
+                    className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                    checked={consent}
+                    onChange={(e) => setConsent(e.target.checked)}
+                  />
+                </div>
+                <label htmlFor="consent-check" className="text-sm text-foreground leading-relaxed cursor-pointer">
+                  Acepto que mis datos anonimizados (respuestas, puntuación y nivel de riesgo) sean almacenados para fines estadísticos y de seguimiento médico. Entiendo que mi identidad está protegida mediante un ID único.
+                </label>
+              </div>
+            </div>
+          </AuditStep>
+        );
       case 'resultados':
         const score = calculateAuditScore(resultados);
         const result = riskEvaluation(score, sexo);
+
+        const generatePDF = () => {
+          const doc = new jsPDF();
+
+          // Header
+          doc.setFontSize(32);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(40, 40, 40);
+          doc.text("Informe de Evaluación AUDIT-C", 20, 20);
+
+          doc.setFontSize(12);
+          doc.setTextColor(100, 100, 100);
+          doc.text(`ID Paciente: ${patientId}`, 20, 30);
+          doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 20, 36);
+
+          // Resultado Principal
+          doc.setDrawColor(200, 200, 200);
+          doc.line(20, 45, 190, 45);
+
+          doc.setFontSize(16);
+          doc.setTextColor(0, 0, 0);
+          doc.text("Resultado:", 20, 60);
+
+          doc.setFontSize(14);
+          if (result.color === 'green') doc.setTextColor(34, 197, 94);
+          else if (result.color === 'yellow') doc.setTextColor(234, 179, 8);
+          else if (result.color === 'amber') doc.setTextColor(249, 115, 22);
+          else doc.setTextColor(239, 68, 68);
+
+          doc.text(`${result.title} (${score} puntos)`, 50, 60);
+
+          doc.setFontSize(12);
+          doc.setTextColor(60, 60, 60);
+          doc.text(result.message, 20, 75);
+
+          // Detalles
+          doc.line(20, 85, 190, 85);
+          doc.text("Respuestas:", 20, 95);
+
+          let y = 105;
+          auditQuestionsData.forEach((q, index) => {
+            const answerVal = resultados[q.id];
+            const answerText = q.answerOptions.find(opt => opt.valor === answerVal)?.texto[estudios] || "N/A";
+
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            const questionTitle = doc.splitTextToSize(`${index + 1}. ${q.question[estudios]}`, 170);
+            doc.text(questionTitle, 20, y);
+            y += (questionTitle.length * 5) + 2;
+
+            doc.setTextColor(0, 0, 0);
+            doc.text(answerText, 25, y);
+            y += 10;
+          });
+
+          // Footer
+          doc.setFontSize(7);
+          doc.text("Este documento es informativo y no sustituye un diagnóstico médico profesional.", 20, 280);
+          doc.text("Generado por Alcolens", 20, 285);
+
+          doc.save(`Alcolens_Report_${patientId}.pdf`);
+        };
 
         return (
           <AuditStep
@@ -201,7 +293,15 @@ function AuditContent() {
                 </p>
               </div>
 
-              <div className="flex justify-center pt-4">
+              <div className="flex flex-col gap-3 justify-center pt-4 items-center">
+                <LiquidButton
+                  onClick={generatePDF}
+                  className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-primary rounded-xl font-bold hover:bg-slate-800 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                >
+                  <Download className="w-5 h-5" />
+                  <span>Descargar Informe PDF</span>
+                </LiquidButton>
+
                 <LiquidButton
                   href="/"
                   className="w-fit"

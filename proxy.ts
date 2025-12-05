@@ -3,14 +3,30 @@ import { getToken } from 'next-auth/jwt';
 
 export async function proxy(req: NextRequest) {
   // Debug: Ver en terminal si se ejecuta
-  // console.log("🔒 Middleware ejecutándose en:", req.nextUrl.pathname);
+  const secret = process.env.NEXTAUTH_SECRET;
+  console.log("🔒 Middleware: Secret loaded?", !!secret, secret?.substring(0, 5));
 
-  const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+  const allCookies = req.cookies.getAll();
+
+  const tokenCookie = req.cookies.get('next-auth.session-token') || req.cookies.get('__Secure-next-auth.session-token');
+
+  let session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+
+  // Fallback: If session is null but we have a secure cookie, try forcing the name
+  if (!session && req.cookies.get('__Secure-next-auth.session-token')) {
+    session = await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+      cookieName: '__Secure-next-auth.session-token'
+    });
+    console.log("🔓 Session decoded (fallback):", session);
+  }
+
   const { pathname } = req.nextUrl;
 
   // --- REGLA 1: ZONA PÚBLICA DE AUTH (Login/Register) ---
   if (pathname.startsWith('/auth') && session) {
-    return NextResponse.redirect(new URL('/doctor/dashboard', req.url));
+    return NextResponse.redirect(new URL('/doctor', req.url));
   }
 
   // --- REGLA 2: ZONA PROTEGIDA (Doctor) ---

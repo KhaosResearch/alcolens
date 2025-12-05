@@ -69,7 +69,8 @@ export async function saveAuditResult(
     risk: AuditRiskLevel,
     answers: Record<string, number>,
     sex: Sex,
-    studyLevel: studyLevel
+    studyLevel: studyLevel,
+    consent: boolean
 ): Promise<boolean> {
     try {
         const response = await fetch('/api/responses', {
@@ -83,7 +84,8 @@ export async function saveAuditResult(
                 studyLevel,
                 answers,
                 totalScore: score,
-                levelResult: risk
+                levelResult: risk,
+                consent
             }),
         });
 
